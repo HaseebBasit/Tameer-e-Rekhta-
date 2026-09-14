@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X, Heart, ArrowRight } from "lucide-react";
@@ -18,6 +19,12 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   navLinks,
 }) => {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  // Portals need a browser document, so only render after mount (avoids SSR mismatch)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on Escape key
   useEffect(() => {
@@ -42,9 +49,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
       <div
@@ -130,6 +137,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
