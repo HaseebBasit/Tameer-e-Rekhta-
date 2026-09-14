@@ -157,9 +157,8 @@ export const Footer: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>&copy; 2026 Ta&apos;meer-e-Rekhta, All Rights Reserved.</p>
           <p className="flex items-center gap-1.5">
-            <span>Designed with</span>
-            <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
-            <span>for Humanity</span>
+            <span>Designed by</span>
+            <span>Haseeb Basit</span>
           </p>
         </div>
       </Container>
