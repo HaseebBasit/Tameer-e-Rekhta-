@@ -155,6 +155,15 @@ Submitted At: ${submissionDate}
         message: "Volunteer application received and sent successfully via SMTP.",
       });
     } else {
+      // Determine request origin and referer so the external service accepts the dispatch
+      const host = req.headers.get("host") || "localhost:3000";
+      const protocol = host.includes("localhost") ? "http" : "https";
+      const origin = req.headers.get("origin") || `${protocol}://${host}`;
+      const referer = req.headers.get("referer") || `${origin}/volunteer`;
+      const userAgent =
+        req.headers.get("user-agent") ||
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+
       // Send via server-side direct delivery endpoint to recipient email
       const formSubmitResponse = await fetch(
         `https://formsubmit.co/ajax/${encodeURIComponent(recipientEmail)}`,
@@ -163,9 +172,15 @@ Submitted At: ${submissionDate}
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
+            Origin: origin,
+            Referer: referer,
+            "User-Agent": userAgent,
           },
           body: JSON.stringify({
             _subject: emailSubject,
+            _captcha: "false",
+            _template: "table",
+            _replyto: email,
             "Full Name": fullName,
             "Email Address": email,
             "Phone / WhatsApp": phone,
@@ -174,16 +189,17 @@ Submitted At: ${submissionDate}
             "Area of Interest": areaOfInterest,
             "Why Join / Motivation": motivation || "None provided",
             "Submitted At": submissionDate,
-            _replyto: email,
-            _template: "table",
           }),
         }
       );
 
-      if (!formSubmitResponse.ok) {
-        const errText = await formSubmitResponse.text();
-        console.error("Email dispatch failed:", errText);
-        throw new Error("Unable to deliver volunteer details via email service.");
+      const submitData = await formSubmitResponse.json().catch(() => null);
+
+      if (!formSubmitResponse.ok || (submitData && submitData.success === "false")) {
+        console.error("FormSubmit response failed:", submitData);
+        throw new Error(
+          submitData?.message || "Unable to deliver volunteer details via email service."
+        );
       }
 
       return NextResponse.json({

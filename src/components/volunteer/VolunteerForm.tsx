@@ -48,6 +48,7 @@ export const VolunteerForm: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      // 1. Try server-side API endpoint
       const response = await fetch("/api/volunteer", {
         method: "POST",
         headers: {
@@ -56,17 +57,85 @@ export const VolunteerForm: React.FC = () => {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const result = await response.json().catch(() => null);
 
-      if (response.ok && result.success) {
+      if (response.ok && result?.success) {
         setIsSubmitted(true);
-      } else {
-        setApiError(
-          result.error ||
-            "Unable to send your application. Please check your connection and try again."
-        );
+        return;
       }
+
+      // 2. Direct browser fallback if API route encountered an issue
+      console.warn("API route failed, trying direct delivery fallback...", result?.error);
+      const fallbackResponse = await fetch(
+        "https://formsubmit.co/ajax/haseebbasit2717@gmail.com",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            _subject: `New Volunteer Application: ${formData.fullName} - ${formData.areaOfInterest}`,
+            _captcha: "false",
+            _template: "table",
+            _replyto: formData.email,
+            "Full Name": formData.fullName,
+            "Email Address": formData.email,
+            "Phone / WhatsApp": formData.phone,
+            "City": formData.city,
+            "Age": formData.age || "Not specified",
+            "Area of Interest": formData.areaOfInterest,
+            "Why Join / Motivation": formData.motivation || "None provided",
+          }),
+        }
+      );
+
+      const fallbackData = await fallbackResponse.json().catch(() => null);
+      if (fallbackResponse.ok && fallbackData?.success !== "false") {
+        setIsSubmitted(true);
+        return;
+      }
+
+      setApiError(
+        result?.error ||
+          fallbackData?.message ||
+          "Unable to send your application. Please check your connection and try again."
+      );
     } catch (err: any) {
+      // Direct browser fallback on network catch
+      try {
+        const directResponse = await fetch(
+          "https://formsubmit.co/ajax/haseebbasit2717@gmail.com",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              _subject: `New Volunteer Application: ${formData.fullName} - ${formData.areaOfInterest}`,
+              _captcha: "false",
+              _template: "table",
+              _replyto: formData.email,
+              "Full Name": formData.fullName,
+              "Email Address": formData.email,
+              "Phone / WhatsApp": formData.phone,
+              "City": formData.city,
+              "Age": formData.age || "Not specified",
+              "Area of Interest": formData.areaOfInterest,
+              "Why Join / Motivation": formData.motivation || "None provided",
+            }),
+          }
+        );
+        const directData = await directResponse.json().catch(() => null);
+        if (directResponse.ok && directData?.success !== "false") {
+          setIsSubmitted(true);
+          return;
+        }
+      } catch (innerErr) {
+        console.error("Direct fallback failed:", innerErr);
+      }
+
       setApiError(
         "Network error: Unable to submit application. Please check your internet connection."
       );
