@@ -70,99 +70,481 @@ For questions, contact us at: info@tameer-e-rekhta.org | WhatsApp: 0312-3456789
     `.trim();
 
     // HTML Email Template
-    const htmlContent = `
+   const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
   <title>${emailSubject}</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      padding: 24px;
+    }
+
+    .email-wrapper {
+      width: 100%;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .email-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+
+    .header {
+      padding: 32px 24px;
+      text-align: center;
+      color: #ffffff;
+      background: #0D5C3A;
+      background: linear-gradient(135deg, #0D5C3A 0%, #084028 100%);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.3;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 32px 28px;
+    }
+
+    .amount-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .amount-label {
+      display: block;
+      font-size: 12px;
+      line-height: 1.4;
+      text-transform: uppercase;
+      color: #15803d;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .amount {
+      font-size: 32px;
+      line-height: 1.2;
+      font-weight: 900;
+      color: #0D5C3A;
+      margin: 4px 0;
+      word-break: break-word;
+    }
+
+    .status {
+      display: inline-block;
+      background-color: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      line-height: 1.4;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 6px;
+    }
+
+    .message {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #475569;
+      margin: 0;
+    }
+
+    .details-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 14px;
+      table-layout: fixed;
+    }
+
+    .details-table td {
+      padding: 11px 8px;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .details-table tr {
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .details-table td:first-child {
+      width: 38%;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    .details-table td:last-child {
+      width: 62%;
+      color: #0f172a;
+    }
+
+    .transaction-id {
+      font-weight: 700;
+      font-family: monospace;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+    }
+
+    .payment-method {
+      font-weight: 700;
+      color: #0D5C3A !important;
+    }
+
+    .transaction-date-label {
+      color: #94a3b8 !important;
+    }
+
+    .transaction-date {
+      font-size: 13px;
+      color: #64748b !important;
+    }
+
+    .pledge-card {
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 24px;
+      border: 1px dashed #cbd5e1;
+      text-align: center;
+    }
+
+    .pledge-card .quote {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #475569;
+      font-style: italic;
+    }
+
+    .pledge-card .pledge-note {
+      margin: 6px 0 0;
+      font-size: 11px;
+      line-height: 1.5;
+      color: #94a3b8;
+    }
+
+    .footer {
+      background-color: #f1f5f9;
+      border-top: 1px solid #e2e8f0;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #64748b;
+    }
+
+    .footer p {
+      margin: 0 0 4px;
+    }
+
+    .footer .small {
+      margin: 0;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    /* Mobile */
+    @media only screen and (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+
+      .email-card {
+        border-radius: 14px;
+      }
+
+      .header {
+        padding: 24px 16px;
+      }
+
+      .header h1 {
+        font-size: 21px;
+      }
+
+      .header p {
+        font-size: 12px;
+      }
+
+      .content {
+        padding: 22px 16px;
+      }
+
+      .amount-box {
+        padding: 16px 12px;
+        border-radius: 12px;
+      }
+
+      .amount {
+        font-size: 28px;
+      }
+
+      .amount-label {
+        font-size: 10px;
+      }
+
+      .status {
+        font-size: 10px;
+      }
+
+      .message {
+        font-size: 13px;
+      }
+
+      .details-table {
+        font-size: 13px;
+      }
+
+      .details-table td {
+        padding: 10px 5px;
+      }
+
+      .details-table td:first-child {
+        width: 40%;
+      }
+
+      .details-table td:last-child {
+        width: 60%;
+      }
+
+      .pledge-card {
+        padding: 14px 12px;
+      }
+
+      .footer {
+        padding: 16px 12px;
+        font-size: 11px;
+      }
+    }
+
+    /* Very small phones */
+    @media only screen and (max-width: 380px) {
+      body {
+        padding: 8px;
+      }
+
+      .header {
+        padding: 20px 12px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .content {
+        padding: 18px 12px;
+      }
+
+      .amount {
+        font-size: 24px;
+      }
+
+      .details-table {
+        font-size: 12px;
+      }
+
+      .details-table td {
+        padding: 9px 4px;
+      }
+    }
+  </style>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 24px; background-color: #f8fafc; color: #1e293b;">
-  <div style="max-width: 620px; margin: 0 auto; background: #ffffff; border-radius: 20px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);">
 
-    <!-- Header Banner -->
-    <div style="background: linear-gradient(135deg, #0D5C3A 0%, #084028 100%); padding: 32px 24px; text-align: center; color: #ffffff;">
-      <span style="display: inline-block; background-color: rgba(255,255,255,0.15); font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.1em; padding: 4px 12px; border-radius: 9999px; margin-bottom: 8px;">
-        Official Donation Receipt • Electronic Copy
-      </span>
-      <h1 style="margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.02em;">تعمیرِ ریختہ | Ta'meer-e-Rekhta</h1>
-      <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Urdu Revival • Youth Leadership • Humanity</p>
-    </div>
+<body>
 
-    <div style="padding: 32px 28px;">
-      <!-- Hero Amount Box -->
-      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 24px;">
-        <span style="font-size: 12px; text-transform: uppercase; color: #15803d; font-weight: 700; letter-spacing: 0.05em;">Total Donation Amount</span>
-        <div style="font-size: 32px; font-weight: 900; color: #0D5C3A; margin: 4px 0;">${formattedAmount}</div>
-        <span style="display: inline-block; background-color: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 6px;">
-          ✓ Payment Completed (Test Mode)
+  <div class="email-wrapper">
+    <div class="email-card">
+
+      <!-- Header Banner -->
+      <div class="header">
+
+        <span style="
+          display: inline-block;
+          background-color: rgba(255,255,255,0.15);
+          font-size: 11px;
+          text-transform: uppercase;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          padding: 4px 12px;
+          border-radius: 9999px;
+          margin-bottom: 8px;
+        ">
+          Official Donation Receipt • Electronic Copy
         </span>
+
+        <h1>
+          تعمیرِ ریختہ | Ta'meer-e-Rekhta
+        </h1>
+
+        <p>
+          Urdu Revival • Youth Leadership • Humanity
+        </p>
+
       </div>
 
-      <p style="font-size: 14px; line-height: 1.6; color: #475569; margin-top: 0;">
-        Dear <strong>${donorName}</strong>,<br>
-        Thank you for your generous contribution to <strong>Ta'meer-e-Rekhta</strong>. Please retain this official receipt for your records.
-      </p>
+      <!-- Content -->
+      <div class="content">
 
-      <!-- Details Table -->
-      <table style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px;">
-        <tbody>
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 11px 8px; font-weight: 600; color: #64748b; width: 38%;">Receipt / Txn ID</td>
-            <td style="padding: 11px 8px; font-weight: 700; font-family: monospace; color: #0f172a;">${txId}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 11px 8px; font-weight: 600; color: #64748b;">Donor Name</td>
-            <td style="padding: 11px 8px; font-weight: 700; color: #0f172a;">${donorName}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 11px 8px; font-weight: 600; color: #64748b;">Email Address</td>
-            <td style="padding: 11px 8px; color: #0f172a;">${donorEmail}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 11px 8px; font-weight: 600; color: #64748b;">Phone / WhatsApp</td>
-            <td style="padding: 11px 8px; color: #0f172a;">${donorPhone}</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 11px 8px; font-weight: 600; color: #64748b;">Payment Method</td>
-            <td style="padding: 11px 8px; font-weight: 700; color: #0D5C3A;">${paymentMethod} (Test Simulation)</td>
-          </tr>
-          <tr style="border-bottom: 1px solid #f1f5f9;">
-            <td style="padding: 11px 8px; font-weight: 600; color: #64748b;">Cause / Initiative</td>
-            <td style="padding: 11px 8px; color: #0f172a;">${cause || "General Welfare Fund"}</td>
-          </tr>
-          ${
-            notes
-              ? `<tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 11px 8px; font-weight: 600; color: #64748b;">Special Note</td>
-                  <td style="padding: 11px 8px; color: #334155;">${notes}</td>
-                </tr>`
-              : ""
-          }
-          <tr>
-            <td style="padding: 11px 8px; font-weight: 600; color: #94a3b8;">Transaction Date</td>
-            <td style="padding: 11px 8px; font-size: 13px; color: #64748b;">${transactionDate}</td>
-          </tr>
-        </tbody>
-      </table>
+        <!-- Hero Amount Box -->
+        <div class="amount-box">
 
-      <!-- Bottom pledge card -->
-      <div style="background-color: #f8fafc; border-radius: 12px; padding: 16px; margin-top: 24px; border: 1px dashed #cbd5e1; text-align: center;">
-        <p style="margin: 0; font-size: 13px; color: #475569; font-style: italic;">
-          &ldquo;We can&apos;t help everyone, but everyone can help someone.&rdquo;
+          <span class="amount-label">
+            Total Donation Amount
+          </span>
+
+          <div class="amount">
+            ${formattedAmount}
+          </div>
+
+          <span class="status">
+            ✓ Payment Completed (Test Mode)
+          </span>
+
+        </div>
+
+        <p class="message">
+          Dear <strong>${donorName}</strong>,<br>
+          Thank you for your generous contribution to
+          <strong>Ta'meer-e-Rekhta</strong>.
+          Please retain this official receipt for your records.
         </p>
-        <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">
-          100% of public donations are allocated directly to verified welfare projects.
-        </p>
+
+        <!-- Details Table -->
+        <table class="details-table">
+
+          <tbody>
+
+            <tr>
+              <td>Receipt / Txn ID</td>
+              <td class="transaction-id">${txId}</td>
+            </tr>
+
+            <tr>
+              <td>Donor Name</td>
+              <td style="font-weight: 700;">
+                ${donorName}
+              </td>
+            </tr>
+
+            <tr>
+              <td>Email Address</td>
+              <td>${donorEmail}</td>
+            </tr>
+
+            <tr>
+              <td>Phone / WhatsApp</td>
+              <td>${donorPhone}</td>
+            </tr>
+
+            <tr>
+              <td>Payment Method</td>
+              <td class="payment-method">
+                ${paymentMethod} (Test Simulation)
+              </td>
+            </tr>
+
+            <tr>
+              <td>Cause / Initiative</td>
+              <td>
+                ${cause || "General Welfare Fund"}
+              </td>
+            </tr>
+
+            ${
+              notes
+                ? `
+                <tr>
+                  <td>Special Note</td>
+                  <td style="color: #334155;">
+                    ${notes}
+                  </td>
+                </tr>
+                `
+                : ""
+            }
+
+            <tr>
+              <td class="transaction-date-label">
+                Transaction Date
+              </td>
+
+              <td class="transaction-date">
+                ${transactionDate}
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+        <!-- Bottom pledge card -->
+        <div class="pledge-card">
+
+          <p class="quote">
+            &ldquo;We can&apos;t help everyone, but everyone can help someone.&rdquo;
+          </p>
+
+          <p class="pledge-note">
+            100% of public donations are allocated directly to verified welfare projects.
+          </p>
+
+        </div>
+
       </div>
-    </div>
 
-    <!-- Footer -->
-    <div style="background-color: #f1f5f9; border-top: 1px solid #e2e8f0; padding: 18px 24px; text-align: center; font-size: 12px; color: #64748b;">
-      <p style="margin: 0 0 4px 0;"><strong>Ta'meer-e-Rekhta Welfare Society</strong> • Karachi, Pakistan</p>
-      <p style="margin: 0; font-size: 11px; color: #94a3b8;">This is an automated system-generated electronic receipt.</p>
+      <!-- Footer -->
+      <div class="footer">
+
+        <p>
+          <strong>Ta'meer-e-Rekhta Welfare Society</strong>
+          • Karachi, Pakistan
+        </p>
+
+        <p class="small">
+          This is an automated system-generated electronic receipt.
+        </p>
+
+      </div>
+
     </div>
   </div>
+
 </body>
 </html>
     `.trim();
