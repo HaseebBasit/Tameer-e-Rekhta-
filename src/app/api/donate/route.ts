@@ -216,15 +216,8 @@ For questions, contact us at: info@tameer-e-rekhta.org | WhatsApp: 0312-3456789
       //   req.headers.get("user-agent") ||
       //   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
-      const host = req.headers.get("host") || "localhost:3000";
-
-const protocol = host.includes("localhost") ? "http" : "https";
-
-const origin =
-  req.headers.get("origin") || "https://tameer-e-rekhta.vercel.app";
-
-const referer =
-  req.headers.get("referer") || `${origin}/donate`;
+      const origin = "https://tameer-e-rekhta.vercel.app";
+const referer = `${origin}/donate`;
 
 const userAgent =
   req.headers.get("user-agent") ||
