@@ -66,7 +66,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(0,0,0,0.25)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           zIndex: 9999,
