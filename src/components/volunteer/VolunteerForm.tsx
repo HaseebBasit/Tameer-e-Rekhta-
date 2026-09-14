@@ -16,6 +16,7 @@ export const VolunteerForm: React.FC = () => {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiError, setApiError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -37,6 +38,7 @@ export const VolunteerForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setApiError(null);
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -45,11 +47,32 @@ export const VolunteerForm: React.FC = () => {
     setErrors({});
     setIsSubmitting(true);
 
-    // Simulate async submission
-    setTimeout(() => {
+    try {
+      const response = await fetch("/api/volunteer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setIsSubmitted(true);
+      } else {
+        setApiError(
+          result.error ||
+            "Unable to send your application. Please check your connection and try again."
+        );
+      }
+    } catch (err: any) {
+      setApiError(
+        "Network error: Unable to submit application. Please check your internet connection."
+      );
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1200);
+    }
   };
 
   const handleReset = () => {
@@ -63,6 +86,7 @@ export const VolunteerForm: React.FC = () => {
       motivation: "",
     });
     setErrors({});
+    setApiError(null);
     setIsSubmitted(false);
   };
 
@@ -79,11 +103,11 @@ export const VolunteerForm: React.FC = () => {
           </h3>
 
           <p className="text-gray-600 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
-            Thank you, <strong className="text-brand-dark">{formData.fullName}</strong>! Your volunteer registration has been recorded. Our team will review your application and reach out to you via WhatsApp at <span className="font-semibold text-brand-emerald">{formData.phone}</span>.
+            Thank you, <strong className="text-brand-dark">{formData.fullName}</strong>! Your volunteer registration has been recorded and delivered to our team (<span className="text-brand-emerald font-semibold">haseebbasit2717@gmail.com</span>). We will review your application and reach out to you via WhatsApp at <span className="font-semibold text-brand-emerald">{formData.phone}</span>.
           </p>
 
-          <div className="p-4 bg-brand-sand/50 rounded-2xl text-xs text-gray-500 max-w-md mx-auto">
-            Note: Client validation successful. In production, this directly hooks to the Ta&apos;meer-e-Rekhta volunteer database or email dispatch.
+          <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-xs text-emerald-800 max-w-md mx-auto">
+            ✓ Your volunteer details have been forwarded to the Ta&apos;meer-e-Rekhta administration.
           </div>
 
           <div className="pt-4">
@@ -109,6 +133,16 @@ export const VolunteerForm: React.FC = () => {
               Please complete the details below to join our team of changemakers.
             </p>
           </div>
+
+          {apiError && (
+            <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-3 animate-in fade-in">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-red-800">Submission Error</p>
+                <p className="text-xs text-red-600 mt-0.5">{apiError}</p>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Full Name */}
