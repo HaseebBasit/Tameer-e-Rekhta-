@@ -21,29 +21,20 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
-  // Portals need a browser document, so only render after mount (avoids SSR mismatch)
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Close on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
+      if (e.key === "Escape" && isOpen) onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when menu is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
+    document.body.style.overflow = isOpen ? "hidden" : "unset";
     return () => {
       document.body.style.overflow = "unset";
     };
@@ -52,18 +43,43 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
   if (!isOpen || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 lg:hidden">
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999 }}>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          zIndex: 9999,
+        }}
       />
 
       {/* Drawer Panel */}
-      <div className="fixed inset-y-0 right-0 max-w-xs w-full bg-white shadow-2xl flex flex-col z-10 animate-in slide-in-from-right duration-300">
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: "85vw",
+          maxWidth: "320px",
+          height: "100vh",
+          background: "#ffffff",
+          boxShadow: "-10px 0 30px rgba(0,0,0,0.2)",
+          zIndex: 10000,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
         {/* Drawer Header */}
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-brand-mint text-brand-emerald flex items-center justify-center font-bold text-lg">
               🌱
@@ -88,7 +104,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         </div>
 
         {/* Nav Links */}
-        <nav className="flex-1 overflow-y-auto p-5 space-y-1">
+        <nav className="flex-1 overflow-y-auto p-5 space-y-1" style={{ flex: "1 1 auto" }}>
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -112,7 +128,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         </nav>
 
         {/* Drawer Footer Actions */}
-        <div className="p-5 border-t border-gray-100 space-y-3 bg-gray-50/50">
+        <div className="p-5 border-t border-gray-100 space-y-3 bg-gray-50/50 flex-shrink-0">
           <Button
             href="/volunteer"
             variant="primary"
