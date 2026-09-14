@@ -20,10 +20,22 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  // Controls the slide-in transition: starts false, flips to true one frame
+  // after the drawer mounts so the CSS transition actually animates.
+  const [entered, setEntered] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      const raf = requestAnimationFrame(() => setEntered(true));
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setEntered(false);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -58,6 +70,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           zIndex: 9999,
+          opacity: entered ? 1 : 0,
+          transition: "opacity 280ms ease",
         }}
       />
 
@@ -73,9 +87,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           height: "100vh",
           background: "#ffffff",
           boxShadow: "-10px 0 30px rgba(0,0,0,0.2)",
+          borderTopLeftRadius: "20px",
+          borderBottomLeftRadius: "20px",
+          overflow: "hidden",
           zIndex: 10000,
           display: "flex",
           flexDirection: "column",
+          transform: entered ? "translateX(0)" : "translateX(100%)",
+          transition: "transform 320ms cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
         {/* Drawer Header */}
@@ -105,7 +124,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
 
         {/* Nav Links */}
         <nav className="flex-1 overflow-y-auto p-5 space-y-1" style={{ flex: "1 1 auto" }}>
-          {navLinks.map((link) => {
+          {navLinks.map((link, i) => {
             const isActive = pathname === link.href;
             return (
               <Link
@@ -117,6 +136,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                     ? "bg-brand-mint text-brand-dark font-semibold shadow-xs"
                     : "text-gray-700 hover:bg-gray-50 hover:text-brand-dark"
                 }`}
+                style={{
+                  opacity: entered ? 1 : 0,
+                  transform: entered ? "translateX(0)" : "translateX(12px)",
+                  transition: `opacity 260ms ease ${60 + i * 35}ms, transform 260ms ease ${60 + i * 35}ms`,
+                }}
               >
                 <span>{link.name}</span>
                 {isActive && (
