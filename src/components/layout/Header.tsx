@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { name: "Our Work", href: "/our-work" },
   { name: "Events", href: "/events" },
   { name: "Volunteer", href: "/volunteer" },
+  { name: "Donate", href: "/donate" },
   { name: "Gallery", href: "/gallery" },
   { name: "Contact", href: "/contact" },
 ];

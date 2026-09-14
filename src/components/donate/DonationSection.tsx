@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import DonationPaymentForm from "./DonationPaymentForm";
-import DonationReceipt, { type DonationReceiptData } from "./DonationReceipt";
+import { DonationReceipt, type ReceiptData } from "./DonationReceipt";
 
 /**
  * Drop this component into src/app/donate/page.tsx wherever the interactive
@@ -12,7 +12,7 @@ import DonationReceipt, { type DonationReceiptData } from "./DonationReceipt";
  * <DonationSection />
  */
 export default function DonationSection() {
-  const [receipt, setReceipt] = useState<DonationReceiptData | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   return receipt ? (
     <DonationReceipt receipt={receipt} onReset={() => setReceipt(null)} />

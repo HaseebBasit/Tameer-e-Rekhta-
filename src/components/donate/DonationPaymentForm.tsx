@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Loader2, ShieldCheck, Smartphone, Landmark, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { DonationReceiptData } from "./DonationReceipt";
+import type { ReceiptData } from "./DonationReceipt";
 
 const CAUSES = [
   { value: "food_drives", label: "Food Drives & Ration Relief" },
@@ -66,7 +66,7 @@ const INITIAL_STATE: FormState = {
 };
 
 interface DonationPaymentFormProps {
-  onSuccess: (receipt: DonationReceiptData) => void;
+  onSuccess: (receipt: ReceiptData) => void;
 }
 
 function isValidEmail(email: string) {
@@ -100,6 +100,7 @@ export default function DonationPaymentForm({ onSuccess }: DonationPaymentFormPr
 
     if (!form.donorName.trim()) next.donorName = "Please enter your full name.";
     if (!isValidEmail(form.donorEmail)) next.donorEmail = "Please enter a valid email address.";
+    if (!form.donorPhone.trim()) next.donorPhone = "Phone / WhatsApp is required.";
     if (!effectiveAmount || effectiveAmount <= 0) next.amount = "Please choose or enter a valid amount.";
 
     setErrors(next);
@@ -130,22 +131,23 @@ export default function DonationPaymentForm({ onSuccess }: DonationPaymentFormPr
 
       const data = await res.json();
 
-      if (!res.ok || !data.ok) {
+      if (!res.ok || !data.success) {
         setSubmitError(data?.error ?? "Something went wrong. Please try again.");
         return;
       }
 
+      // The API's receipt object already carries transactionId, donorName,
+      // donorEmail, donorPhone, a pre-formatted `amount` string, and `date`.
+      // We override paymentMethod/cause with human-friendly labels for display.
       onSuccess({
-        transactionId: data.transactionId,
-        date: data.date,
-        donorName: form.donorName,
-        donorEmail: form.donorEmail,
-        donorPhone: form.donorPhone,
-        amount: effectiveAmount,
-        paymentMethodLabel: PAYMENT_METHOD_LABELS[form.paymentMethod],
-        causeLabel: CAUSE_LABELS[form.cause],
-        notes: form.notes || undefined,
-        emailStatus: data.emailStatus,
+        transactionId: data.receipt.transactionId,
+        donorName: data.receipt.donorName,
+        donorEmail: data.receipt.donorEmail,
+        donorPhone: data.receipt.donorPhone,
+        amount: data.receipt.amount,
+        paymentMethod: PAYMENT_METHOD_LABELS[form.paymentMethod],
+        cause: CAUSE_LABELS[form.cause],
+        date: data.receipt.date,
       });
     } catch {
       setSubmitError("Network error — please check your connection and try again.");
@@ -286,6 +288,7 @@ export default function DonationPaymentForm({ onSuccess }: DonationPaymentFormPr
             className="w-full rounded-lg border border-brand-sand px-3.5 py-2.5 text-sm outline-none focus:border-brand-emerald"
             placeholder="03XX-XXXXXXX"
           />
+          {errors.donorPhone && <p className="mt-1 text-xs text-red-600">{errors.donorPhone}</p>}
         </div>
       </div>
 

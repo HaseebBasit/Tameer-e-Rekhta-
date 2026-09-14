@@ -1,282 +1,183 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  ShieldCheck,
-  Target,
-  Lock,
-  Copy,
-  Check,
-  Building2,
-  Phone,
-  Info,
-  Heart,
-} from "lucide-react";
+import { useState } from "react";
+import { ShieldCheck, Heart, Lock, Copy, Check, Landmark, Smartphone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { siteConfig } from "@/data/site";
+import DonationSection from "@/components/donate/DonationSection";
 
-export default function DonatePage() {
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+const TRUST_PILLARS = [
+  {
+    icon: ShieldCheck,
+    title: "100% Transparency",
+    description: "Every rupee donated is tracked and reported back to our community.",
+  },
+  {
+    icon: Heart,
+    title: "Direct Impact",
+    description: "Funds go straight to food drives, orphanage care, and youth programs.",
+  },
+  {
+    icon: Lock,
+    title: "Secure Donations",
+    description: "Manual verification and receipts keep every transfer accountable.",
+  },
+];
 
-  const copyToClipboard = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
+const MANUAL_ACCOUNTS = [
+  {
+    id: "easypaisa",
+    icon: Smartphone,
+    label: "EasyPaisa",
+    accountTitle: "Ta'meer-e-Rekhta",
+    accountNumber: "0312-3456789",
+  },
+  {
+    id: "jazzcash",
+    icon: Smartphone,
+    label: "JazzCash",
+    accountTitle: "Ta'meer-e-Rekhta",
+    accountNumber: "0312-3456789",
+  },
+  {
+    id: "bank",
+    icon: Landmark,
+    label: "Bank Transfer",
+    accountTitle: "Meezan Bank Ltd",
+    accountNumber: "0102-0105829103",
+  },
+];
 
-  const pillars = [
-    {
-      title: "100% Transparency",
-      description: "We use every donation responsibly with full financial accountability.",
-      icon: ShieldCheck,
-      color: "text-emerald-700 bg-emerald-50 border-emerald-200",
-    },
-    {
-      title: "Direct Impact",
-      description: "Your support reaches directly to those in need on the ground.",
-      icon: Target,
-      color: "text-blue-700 bg-blue-50 border-blue-200",
-    },
-    {
-      title: "Secure Donations",
-      description: "Your information is safe and verified through trusted bank channels.",
-      icon: Lock,
-      color: "text-teal-700 bg-teal-50 border-teal-200",
-    },
-  ];
+function CopyableAccountCard({
+  icon: Icon,
+  label,
+  accountTitle,
+  accountNumber,
+}: {
+  icon: typeof Smartphone;
+  label: string;
+  accountTitle: string;
+  accountNumber: string;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(accountNumber);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard API unavailable — silently ignore
+    }
+  }
 
   return (
-    <div className="py-10 sm:py-16 space-y-14 sm:space-y-18">
-      <Container size="wide">
-        {/* Header Section matching visual guide */}
-        <SectionHeading
-          title="Support Our Mission"
-          description="Your small contribution can bring a big change in someone's life."
-          align="center"
-        />
+    <div className="rounded-2xl border border-brand-sand bg-white p-5 shadow-card">
+      <div className="mb-3 flex items-center gap-2 text-brand-emerald">
+        <Icon className="h-5 w-5" />
+        <span className="font-heading font-semibold text-brand-dark">{label}</span>
+      </div>
+      <div className="text-xs text-brand-leaf">Account Title</div>
+      <div className="mb-3 text-sm font-medium text-brand-dark">{accountTitle}</div>
+      <div className="text-xs text-brand-leaf">Account Number</div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-semibold text-brand-dark">{accountNumber}</span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="inline-flex items-center gap-1.5 rounded-full border border-brand-emerald px-3 py-1.5 text-xs font-semibold text-brand-emerald transition hover:bg-brand-mint"
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
-        {/* Three Pillars matching visual guide */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
-          {pillars.map((p) => {
-            const IconComponent = p.icon;
-            return (
-              <div
-                key={p.title}
-                className="card-soft rounded-2xl p-6 text-center flex flex-col items-center border border-gray-100"
-              >
-                <div
-                  className={`w-14 h-14 rounded-2xl border flex items-center justify-center mb-4 ${p.color}`}
-                >
-                  <IconComponent className="w-7 h-7" />
-                </div>
-                <h3 className="font-heading font-bold text-lg text-brand-pitch mb-1">
-                  {p.title}
-                </h3>
-                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                  {p.description}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* MAKE A DONATION Container matching visual guide */}
-        <div className="max-w-3xl mx-auto card-soft rounded-3xl p-6 sm:p-10 bg-white border border-gray-100 shadow-xl space-y-8">
-          <div className="text-center space-y-1">
-            <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-brand-pitch">
-              Make a Donation
-            </h2>
-            <p className="text-sm font-medium text-gray-500">
-              Easypaisa / JazzCash / Bank Transfer
-            </p>
-          </div>
-
-          {/* Quick Mobile Wallet Badges matching visual guide */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Easypaisa */}
-            <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200 flex flex-col justify-between space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center">
-                    EP
-                  </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-brand-dark text-base">
-                      Easypaisa
-                    </h3>
-                    <p className="text-[11px] text-gray-500">
-                      Title: {siteConfig.donation.easypaisa.title}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-emerald-200/60 text-emerald-800">
-                  Instant
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between bg-white px-3.5 py-2.5 rounded-xl border border-emerald-200 text-sm font-mono font-bold text-emerald-900">
-                <span>{siteConfig.donation.easypaisa.number}</span>
-                <button
-                  onClick={() =>
-                    copyToClipboard(siteConfig.donation.easypaisa.number, "ep")
-                  }
-                  className="p-1 rounded text-emerald-700 hover:bg-emerald-50 transition-colors"
-                  aria-label="Copy Easypaisa number"
-                >
-                  {copiedKey === "ep" ? (
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* JazzCash */}
-            <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 flex flex-col justify-between space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-red-600 text-white font-bold text-xs flex items-center justify-center">
-                    JC
-                  </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-brand-dark text-base">
-                      JazzCash
-                    </h3>
-                    <p className="text-[11px] text-gray-500">
-                      Title: {siteConfig.donation.jazzcash.title}
-                    </p>
-                  </div>
-                </div>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-200/60 text-amber-800">
-                  Instant
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between bg-white px-3.5 py-2.5 rounded-xl border border-amber-200 text-sm font-mono font-bold text-amber-950">
-                <span>{siteConfig.donation.jazzcash.number}</span>
-                <button
-                  onClick={() =>
-                    copyToClipboard(siteConfig.donation.jazzcash.number, "jc")
-                  }
-                  className="p-1 rounded text-amber-800 hover:bg-amber-50 transition-colors"
-                  aria-label="Copy JazzCash number"
-                >
-                  {copiedKey === "jc" ? (
-                    <Check className="w-4 h-4 text-emerald-600" />
-                  ) : (
-                    <Copy className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Bank Transfer Details Card */}
-          <div className="p-6 rounded-2xl bg-gray-50 border border-gray-200 space-y-4">
-            <div className="flex items-center gap-2.5 text-brand-pitch">
-              <Building2 className="w-5 h-5 text-brand-emerald" />
-              <h3 className="font-heading font-bold text-base">
-                Direct Bank Transfer Details
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div>
-                <span className="text-gray-500 block uppercase font-semibold text-[10px]">
-                  Bank Name
-                </span>
-                <span className="font-bold text-gray-900 text-sm">
-                  {siteConfig.donation.bank.name}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-gray-500 block uppercase font-semibold text-[10px]">
-                  Account Title
-                </span>
-                <span className="font-bold text-gray-900 text-sm">
-                  {siteConfig.donation.bank.accountTitle}
-                </span>
-              </div>
-
-              <div>
-                <span className="text-gray-500 block uppercase font-semibold text-[10px]">
-                  Account Number
-                </span>
-                <div className="flex items-center gap-2 font-mono font-bold text-gray-900 text-sm mt-0.5">
-                  <span>{siteConfig.donation.bank.accountNumber}</span>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(
-                        siteConfig.donation.bank.accountNumber,
-                        "acc"
-                      )
-                    }
-                    className="p-1 rounded hover:bg-gray-200"
-                    aria-label="Copy account number"
-                  >
-                    {copiedKey === "acc" ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 text-gray-500" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <span className="text-gray-500 block uppercase font-semibold text-[10px]">
-                  IBAN Number
-                </span>
-                <div className="flex items-center gap-2 font-mono font-bold text-gray-900 text-xs mt-0.5">
-                  <span className="break-all">
-                    {siteConfig.donation.bank.iban}
-                  </span>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(siteConfig.donation.bank.iban, "iban")
-                    }
-                    className="p-1 rounded hover:bg-gray-200 shrink-0"
-                    aria-label="Copy IBAN"
-                  >
-                    {copiedKey === "iban" ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-600" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 text-gray-500" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Transparent Disclosure matching prompt requirements */}
-          <div className="flex items-start gap-2.5 p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900">
-            <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold">Donation Confirmation & Transparency</p>
-              <p className="text-blue-800 mt-0.5 leading-relaxed">
-                After making a transfer via Easypaisa, JazzCash or Bank, please share your payment receipt via WhatsApp to{" "}
-                <strong>{siteConfig.contact.phone}</strong> or email{" "}
-                <strong>{siteConfig.contact.email}</strong> to receive an official electronic acknowledgement. Automated card gateway processing is currently in queue.
-              </p>
-            </div>
-          </div>
-        </div>
-      </Container>
-
-      {/* Bottom Quote Banner matching visual guide */}
-      <section className="bg-brand-pitch text-white py-12 border-y border-white/5">
+export default function DonatePage() {
+  return (
+    <main>
+      {/* Hero */}
+      <section className="bg-brand-dark py-16 sm:py-20">
         <Container size="wide">
-          <div className="text-center max-w-2xl mx-auto">
-            <p className="text-lg sm:text-xl lg:text-2xl font-light italic text-gray-200">
-              &ldquo;We can&apos;t help everyone, but everyone can help someone.&rdquo;
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="font-heading text-3xl font-bold text-brand-cream sm:text-4xl">
+              Support Our Mission
+            </h1>
+            <p className="mt-3 text-brand-lime">
+              Your generosity powers food drives, orphanage care, and youth leadership programs
+              across Pakistan.
             </p>
           </div>
         </Container>
       </section>
-    </div>
+
+      {/* Trust pillars */}
+      <section className="py-12 sm:py-16">
+        <Container size="wide">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {TRUST_PILLARS.map((pillar) => {
+              const Icon = pillar.icon;
+              return (
+                <div
+                  key={pillar.title}
+                  className="rounded-2xl border border-brand-sand bg-white p-6 text-center shadow-card"
+                >
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-mint text-brand-emerald">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-heading font-semibold text-brand-dark">{pillar.title}</h3>
+                  <p className="mt-1 text-sm text-brand-leaf">{pillar.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Container>
+      </section>
+
+      {/* Interactive test donation flow */}
+      <section className="pb-12 sm:pb-16">
+        <Container size="wide">
+          <h2 className="mb-6 text-center font-heading text-2xl font-bold text-brand-dark">
+            Make a Donation
+          </h2>
+          <DonationSection />
+        </Container>
+      </section>
+
+      {/* Manual payment details */}
+      <section className="border-t border-brand-sand bg-brand-sand/40 py-12 sm:py-16">
+        <Container size="wide">
+          <h2 className="mb-2 text-center font-heading text-2xl font-bold text-brand-dark">
+            Prefer to Transfer Manually?
+          </h2>
+          <p className="mx-auto mb-8 max-w-xl text-center text-sm text-brand-leaf">
+            Send your donation directly using any of the details below, then share your payment
+            screenshot with us via WhatsApp or email for a verified receipt.
+          </p>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            {MANUAL_ACCOUNTS.map((account) => (
+              <CopyableAccountCard key={account.id} {...account} />
+            ))}
+          </div>
+
+          <div className="mx-auto mt-8 max-w-xl rounded-xl bg-white p-5 text-center text-sm text-brand-leaf shadow-card">
+            Share your screenshot on WhatsApp at <strong className="text-brand-dark">0312-3456789</strong>{" "}
+            or email <strong className="text-brand-dark">tameerekhta@gmail.com</strong> to receive your
+            verified donation receipt.
+          </div>
+        </Container>
+      </section>
+
+      {/* Closing quote */}
+      <section className="bg-brand-dark py-14">
+        <Container size="wide">
+          <p className="mx-auto max-w-xl text-center font-heading text-xl italic text-brand-cream">
+            &ldquo;We can&apos;t help everyone, but everyone can help someone.&rdquo;
+          </p>
+        </Container>
+      </section>
+    </main>
   );
 }
