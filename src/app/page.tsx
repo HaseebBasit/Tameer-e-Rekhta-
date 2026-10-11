@@ -3,6 +3,7 @@ import { Hero } from "@/components/home/Hero";
 import { MissionCards } from "@/components/home/MissionCards";
 import { RecentActivities } from "@/components/home/RecentActivities";
 import { Stats } from "@/components/home/Stats";
+import { TeamSection } from "@/components/team/TeamSection";
 
 export default function HomePage() {
   return (
@@ -11,6 +12,7 @@ export default function HomePage() {
       <MissionCards />
       <RecentActivities />
       <Stats />
+      <TeamSection />
     </div>
   );
 }

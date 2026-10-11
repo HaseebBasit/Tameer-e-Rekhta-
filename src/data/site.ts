@@ -7,6 +7,7 @@ export interface SiteConfig {
   contact: {
     email: string;
     phone: string;
+    whatsapp: string;
     address: string;
     city: string;
     country: string;
@@ -19,21 +20,15 @@ export interface SiteConfig {
     icon: string;
   }[];
   donation: {
-    accountTitle: string;
-    easypaisa: {
-      number: string;
-      title: string;
-    };
     jazzcash: {
       number: string;
+      rawNumber: string;
       title: string;
     };
-    bank: {
-      name: string;
-      accountTitle: string;
-      accountNumber: string;
-      iban: string;
-      branchCode: string;
+    easypaisa: {
+      number: string;
+      rawNumber: string;
+      title: string;
     };
   };
 }
@@ -46,8 +41,9 @@ export const siteConfig: SiteConfig = {
   description:
     "Ta'meer-e-Rekhta is a passionate youth-led organization working for Urdu Revival, Youth Leadership Events & Welfare of Mankind in Pakistan. We believe in preserving our cultural identity while serving humanity with compassion.",
   contact: {
-    email: "tameerekhta@gmail.com",
-    phone: "0312-3456789",
+    email: "taameer.e.rekhta@gmail.com",
+    phone: "0307-5615688",
+    whatsapp: "+92 307 5615688",
     address: "Karachi, Pakistan",
     city: "Karachi",
     country: "Pakistan",
@@ -58,24 +54,18 @@ export const siteConfig: SiteConfig = {
     { name: "Instagram", href: "https://instagram.com/tameer_e_rekhta", icon: "Instagram" },
     { name: "Facebook", href: "https://facebook.com", icon: "Facebook" },
     { name: "LinkedIn", href: "https://linkedin.com", icon: "Linkedin" },
-    { name: "WhatsApp", href: "https://wa.me/923123456789", icon: "MessageCircle" },
+    { name: "WhatsApp", href: "https://wa.me/923075615688", icon: "MessageCircle" },
   ],
   donation: {
-    accountTitle: "Ta'meer-e-Rekhta Welfare Fund",
-    easypaisa: {
-      number: "0312-3456789",
-      title: "Ta'meer-e-Rekhta",
-    },
     jazzcash: {
-      number: "0312-3456789",
-      title: "Ta'meer-e-Rekhta",
+      number: "0307-5615688",
+      rawNumber: "03075615688",
+      title: "Muhammad Ahmad",
     },
-    bank: {
-      name: "Meezan Bank Ltd",
-      accountTitle: "Ta'meer-e-Rekhta Welfare Society",
-      accountNumber: "0102-0105829103",
-      iban: "PK72MEZN0001020105829103",
-      branchCode: "0102",
+    easypaisa: {
+      number: "0325-2790731",
+      rawNumber: "03252790731",
+      title: "Muhammad Ahmad",
     },
   },
 };

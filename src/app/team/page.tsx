@@ -1,10 +1,8 @@
 import React from "react";
 import { Metadata } from "next";
-import { Leaf, Users, Heart } from "lucide-react";
+import { Leaf } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { teamMembers } from "@/data/team";
-import { TeamCard } from "@/components/team/TeamCard";
+import { TeamSection } from "@/components/team/TeamSection";
 
 export const metadata: Metadata = {
   title: "Our Team | Ta'meer-e-Rekhta",
@@ -14,25 +12,12 @@ export const metadata: Metadata = {
 
 export default function TeamPage() {
   return (
-    <div className="py-10 sm:py-16 space-y-16">
-      <Container size="wide">
-        {/* Header Section matching visual guide */}
-        <SectionHeading
-          title="Our Team"
-          description="The people behind the mission."
-          align="center"
-        />
+    <div className="space-y-12">
+      {/* Team Hierarchy Section */}
+      <TeamSection isStandalone={true} />
 
-        {/* Team Grid (2 rows of 3 columns) matching visual guide */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {teamMembers.map((member) => (
-            <TeamCard key={member.id} member={member} />
-          ))}
-        </div>
-      </Container>
-
-      {/* Bottom Dark Section matching visual guide */}
-      <section className="bg-brand-pitch text-white py-14 border-y border-white/5 relative overflow-hidden">
+      {/* Shared Mission Quote Section */}
+      <section className="bg-brand-pitch text-white py-16 border-y border-white/5 relative overflow-hidden">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-emerald/10 rounded-full blur-3xl pointer-events-none" />
 
         <Container size="wide">

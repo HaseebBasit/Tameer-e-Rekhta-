@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { GlidingWhatsApp } from "@/components/ui/GlidingWhatsApp";
 
 export const viewport: Viewport = {
   themeColor: "#143022",
@@ -62,6 +63,7 @@ export default function RootLayout({
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <GlidingWhatsApp />
       </body>
     </html>
   );

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Sprout } from "lucide-react";
+import Image from "next/image";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { MobileMenu } from "./MobileMenu";
 import { Container } from "@/components/ui/Container";
@@ -11,6 +12,7 @@ import { Container } from "@/components/ui/Container";
 const NAV_LINKS = [
   { name: "Home", href: "/" },
   { name: "About Us", href: "/about" },
+  { name: "Team", href: "/team" },
   { name: "Our Work", href: "/our-work" },
   { name: "Events", href: "/events" },
   { name: "Volunteer", href: "/volunteer" },
@@ -47,8 +49,14 @@ export const Header: React.FC = () => {
             href="/"
             className="group flex items-center gap-3 transition-transform duration-200 hover:scale-[1.01]"
           >
-            <div className="w-10 h-10 rounded-full bg-brand-mint text-brand-emerald flex items-center justify-center transition-colors group-hover:bg-brand-emerald group-hover:text-white shadow-xs">
-              <Sprout className="w-5 h-5" />
+            <div className="relative w-11 h-11 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-xs group-hover:border-brand-emerald transition-colors">
+              <Image
+                src="/images/logo-mark.png"
+                alt="Ta'meer-e-Rekhta Official Logo"
+                fill
+                className="object-contain p-1"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="font-heading font-extrabold text-brand-pitch text-lg sm:text-xl tracking-tight leading-none">

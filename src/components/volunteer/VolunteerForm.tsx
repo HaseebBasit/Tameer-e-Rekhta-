@@ -67,7 +67,7 @@ export const VolunteerForm: React.FC = () => {
       // 2. Direct browser fallback if API route encountered an issue
       console.warn("API route failed, trying direct delivery fallback...", result?.error);
       const fallbackResponse = await fetch(
-        "https://formsubmit.co/ajax/haseebbasit2717@gmail.com",
+        "https://formsubmit.co/ajax/taameer.e.rekhta@gmail.com",
         {
           method: "POST",
           headers: {
@@ -77,7 +77,7 @@ export const VolunteerForm: React.FC = () => {
           body: JSON.stringify({
             _subject: `New Volunteer Application: ${formData.fullName} - ${formData.areaOfInterest}`,
             _captcha: "false",
-            _template: "table",
+            _template: "box",
             _replyto: formData.email,
             "Full Name": formData.fullName,
             "Email Address": formData.email,
@@ -105,7 +105,7 @@ export const VolunteerForm: React.FC = () => {
       // Direct browser fallback on network catch
       try {
         const directResponse = await fetch(
-          "https://formsubmit.co/ajax/haseebbasit2717@gmail.com",
+          "https://formsubmit.co/ajax/taameer.e.rekhta@gmail.com",
           {
             method: "POST",
             headers: {
@@ -115,7 +115,7 @@ export const VolunteerForm: React.FC = () => {
             body: JSON.stringify({
               _subject: `New Volunteer Application: ${formData.fullName} - ${formData.areaOfInterest}`,
               _captcha: "false",
-              _template: "table",
+              _template: "box",
               _replyto: formData.email,
               "Full Name": formData.fullName,
               "Email Address": formData.email,
@@ -172,7 +172,7 @@ export const VolunteerForm: React.FC = () => {
           </h3>
 
           <p className="text-gray-600 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
-            Thank you, <strong className="text-brand-dark">{formData.fullName}</strong>! Your volunteer registration has been recorded and delivered to our team (<span className="text-brand-emerald font-semibold">haseebbasit2717@gmail.com</span>). We will review your application and reach out to you via WhatsApp at <span className="font-semibold text-brand-emerald">{formData.phone}</span>.
+            Thank you, <strong className="text-brand-dark">{formData.fullName}</strong>! Your volunteer registration has been recorded and delivered to our team (<span className="text-brand-emerald font-semibold">taameer.e.rekhta@gmail.com</span>). We will review your application and reach out to you via WhatsApp at <span className="font-semibold text-brand-emerald">{formData.phone}</span>.
           </p>
 
           <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-xs text-emerald-800 max-w-md mx-auto">

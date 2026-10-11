@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       `TR-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
     const adminEmail =
-      process.env.VOLUNTEER_RECIPIENT_EMAIL || "haseebbasit2717@gmail.com";
+      process.env.VOLUNTEER_RECIPIENT_EMAIL || "taameer.e.rekhta@gmail.com";
     const formattedAmount = `Rs. ${Number(amount).toLocaleString()} PKR`;
     const transactionDate = new Date().toLocaleString("en-PK", {
       timeZone: "Asia/Karachi",
@@ -620,7 +620,7 @@ const userAgent =
           body: JSON.stringify({
             _subject: emailSubject,
             _captcha: "false",
-            _template: "table",
+            _template: "box",
             _replyto: donorEmail,
             _cc: donorEmail,
             "Receipt Number": txId,
@@ -628,11 +628,11 @@ const userAgent =
             "Donor Email": donorEmail,
             "Donor Phone": donorPhone,
             "Donation Amount": formattedAmount,
-            "Payment Method": `${paymentMethod} (Test Mode)`,
+            "Payment Method": paymentMethod,
             "Cause / Initiative": cause || "General Welfare Fund",
             "Special Note": notes || "None",
             "Transaction Date": transactionDate,
-            Status: "Payment Verified (Test Simulation)",
+            Status: "Payment Verified",
           }),
         }
       );

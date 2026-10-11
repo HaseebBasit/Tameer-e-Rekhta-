@@ -110,3 +110,17 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #143022;
 }
+
+/* Gliding floating animation for WhatsApp */
+@keyframes glide {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+}
+
+.animate-glide {
+  animation: glide 3s ease-in-out infinite;
+}

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { X, Heart, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -99,10 +100,15 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
       >
         {/* Drawer Header */}
         <div className="p-5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-brand-mint text-brand-emerald flex items-center justify-center font-bold text-lg">
-              🌱
-            </span>
+          <div className="flex items-center gap-2.5">
+            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-0.5">
+              <Image
+                src="/images/logo-mark.png"
+                alt="Ta'meer-e-Rekhta"
+                fill
+                className="object-contain p-0.5"
+              />
+            </div>
             <div>
               <span className="font-heading font-bold text-brand-pitch text-sm block">
                 Ta&apos;meer-e-Rekhta

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
-  Sprout,
   Utensils,
   HeartHandshake,
   GraduationCap,
@@ -19,6 +19,7 @@ export const Footer: React.FC = () => {
   const quickLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },
+    { name: "Our Team", href: "/team" },
     { name: "Our Work", href: "/our-work" },
     { name: "Events", href: "/events" },
     { name: "Volunteer", href: "/volunteer" },
@@ -41,8 +42,13 @@ export const Footer: React.FC = () => {
           {/* Column 1: Brand & Bio */}
           <div className="lg:col-span-5 space-y-5">
             <Link href="/" className="inline-flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-brand-emerald/20 border border-brand-emerald/40 text-brand-lime flex items-center justify-center">
-                <Sprout className="w-5 h-5" />
+              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-white/10 border border-white/15 flex items-center justify-center p-1">
+                <Image
+                  src="/images/logo-mark.png"
+                  alt="Ta'meer-e-Rekhta Logo"
+                  fill
+                  className="object-contain p-1"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-heading font-extrabold text-white text-xl tracking-tight leading-none">
@@ -88,7 +94,7 @@ export const Footer: React.FC = () => {
                 <Linkedin className="w-4 h-4" />
               </a>
               <a
-                href="https://wa.me/923123456789"
+                href="https://wa.me/923075615688"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-brand-emerald hover:border-brand-emerald transition-all"

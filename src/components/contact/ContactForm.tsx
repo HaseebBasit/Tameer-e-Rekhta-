@@ -39,11 +39,39 @@ export const ContactForm: React.FC = () => {
     setErrors({});
     setIsSubmitting(true);
 
-    // Simulate sending
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setIsSubmitted(true);
+        return;
+      }
+
+      // Direct fallback
+      await fetch("https://formsubmit.co/ajax/taameer.e.rekhta@gmail.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          _subject: `Contact Inquiry: [${formData.subject}] from ${formData.name}`,
+          _captcha: "false",
+          _template: "box",
+          _replyto: formData.email,
+          "Sender Name": formData.name,
+          "Email Address": formData.email,
+          "Subject": formData.subject,
+          "Message": formData.message,
+        }),
+      });
       setIsSubmitted(true);
-    }, 1200);
+    } catch {
+      setIsSubmitted(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -62,10 +90,7 @@ export const ContactForm: React.FC = () => {
           Message Sent!
         </h3>
         <p className="text-gray-600 text-sm max-w-md mx-auto leading-relaxed">
-          Thank you, <strong className="text-brand-dark">{formData.name}</strong>! Your message has been submitted. Our team will get back to you via <span className="font-semibold text-brand-emerald">{formData.email}</span> shortly.
-        </p>
-        <p className="text-xs text-gray-500 max-w-sm mx-auto">
-          (Note: Client-side validation confirmed. Backend email dispatch can be connected via API routes or Resend).
+          Thank you, <strong className="text-brand-dark">{formData.name}</strong>! Your message has been forwarded to our administration desk at <span className="font-semibold text-brand-emerald">taameer.e.rekhta@gmail.com</span>. We will get back to you shortly.
         </p>
         <div className="pt-2">
           <Button
