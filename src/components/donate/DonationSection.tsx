@@ -92,8 +92,18 @@ export default function DonationSection() {
       const data = await response.json().catch(() => null);
 
       if (response.ok && data?.success) {
+        const issuedReceiptNo = data.receipt?.receiptNo || "TMR-01";
+        try {
+          const numPart = parseInt(issuedReceiptNo.replace("TMR-", ""), 10);
+          if (!isNaN(numPart)) {
+            localStorage.setItem("tmr_receipt_seq", String(numPart));
+          }
+        } catch {
+          // ignore localStorage error
+        }
+
         setReceiptResult({
-          receiptNo: data.receipt?.receiptNo || "TMR-01",
+          receiptNo: issuedReceiptNo,
           amount: data.receipt?.amount || `Rs. ${Number(formData.amount).toLocaleString()} PKR`,
           email: formData.donorEmail,
         });
@@ -103,6 +113,16 @@ export default function DonationSection() {
 
       // 2. Direct browser fallback if API route failed
       console.warn("API route failed, sending via direct fallback service...", data?.error);
+      let fallbackReceiptNo = "TMR-01";
+      try {
+        const stored = localStorage.getItem("tmr_receipt_seq");
+        const nextNum = stored ? parseInt(stored, 10) + 1 : 1;
+        localStorage.setItem("tmr_receipt_seq", String(nextNum));
+        fallbackReceiptNo = `TMR-${String(nextNum).padStart(2, "0")}`;
+      } catch {
+        fallbackReceiptNo = "TMR-01";
+      }
+
       const formattedAmount = `Rs. ${Number(formData.amount).toLocaleString()} PKR`;
       const fallbackResponse = await fetch(
         "https://formsubmit.co/ajax/taameer.e.rekhta@gmail.com",
@@ -113,13 +133,13 @@ export default function DonationSection() {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            _subject: `Official Donation Receipt: ${formattedAmount} [TMR-01] - Ta'meer-e-Rekhta`,
+            _subject: `Official Donation Receipt: ${formattedAmount} [${fallbackReceiptNo}] - Ta'meer-e-Rekhta`,
             _captcha: "false",
             _template: "box",
             _replyto: formData.donorEmail,
             _cc: formData.donorEmail,
-            "Receipt Number": "TMR-01",
-            "Transaction / Ref ID": formData.transactionId || "Direct Transfer",
+            "Receipt Number": fallbackReceiptNo,
+            "Transaction / Ref ID": formData.transactionId || fallbackReceiptNo,
             "Donor Name": formData.donorName,
             "Donor Email": formData.donorEmail,
             "Donor Phone": formData.donorPhone,
@@ -135,7 +155,7 @@ export default function DonationSection() {
       const fallbackData = await fallbackResponse.json().catch(() => null);
       if (fallbackResponse.ok && fallbackData?.success !== "false") {
         setReceiptResult({
-          receiptNo: "TMR-01",
+          receiptNo: fallbackReceiptNo,
           amount: formattedAmount,
           email: formData.donorEmail,
         });

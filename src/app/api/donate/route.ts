@@ -2,26 +2,63 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
-function getNextReceiptNumber(): string {
-  const counterFilePath = path.join(process.cwd(), "src", "data", "receipt-counter.json");
-  let nextNum = 1;
+let memoryReceiptCounter = 0;
+
+async function getNextReceiptNumber(): Promise<string> {
+  // 1. Try remote persistent cloud counter (persists across Vercel serverless deployments & cold starts)
   try {
-    if (fs.existsSync(counterFilePath)) {
-      const fileContent = fs.readFileSync(counterFilePath, "utf-8");
-      const parsed = JSON.parse(fileContent);
-      nextNum = (Number(parsed.lastReceiptNumber) || 0) + 1;
-    }
-    fs.writeFileSync(
-      counterFilePath,
-      JSON.stringify({ lastReceiptNumber: nextNum }, null, 2),
-      "utf-8"
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch(
+      "https://abacus.jasoncameron.dev/hit/tameer-e-rekhta-production/receipts",
+      {
+        method: "GET",
+        signal: controller.signal,
+        cache: "no-store",
+      }
     );
-  } catch (err) {
-    console.warn("Could not persist receipt counter file, using timestamp fallback", err);
-    nextNum = Math.floor((Date.now() / 1000) % 999) + 1;
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && typeof data.value === "number" && data.value > 0) {
+        return `TMR-${String(data.value).padStart(2, "0")}`;
+      }
+    }
+  } catch (cloudErr) {
+    console.warn("Persistent cloud counter unavailable, falling back to local store:", cloudErr);
   }
-  return `TMR-${String(nextNum).padStart(2, "0")}`;
+
+  // 2. Try file storage (/tmp for serverless Vercel, and project data directory for local dev)
+  const candidatePaths = [
+    path.join(process.cwd(), "src", "data", "receipt-counter.json"),
+    path.join(os.tmpdir(), "tameer-receipt-counter.json"),
+  ];
+
+  for (const filePath of candidatePaths) {
+    try {
+      let current = 0;
+      if (fs.existsSync(filePath)) {
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        const parsed = JSON.parse(fileContent);
+        current = Number(parsed.lastReceiptNumber) || 0;
+      }
+      const nextNum = current + 1;
+      fs.writeFileSync(
+        filePath,
+        JSON.stringify({ lastReceiptNumber: nextNum }, null, 2),
+        "utf-8"
+      );
+      return `TMR-${String(nextNum).padStart(2, "0")}`;
+    } catch {
+      // Continue to next path
+    }
+  }
+
+  // 3. Fallback: in-memory sequential counter starting at 1 (NEVER random timestamp math)
+  memoryReceiptCounter += 1;
+  return `TMR-${String(memoryReceiptCounter).padStart(2, "0")}`;
 }
 
 export async function POST(req: Request) {
@@ -49,7 +86,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const receiptNo = getNextReceiptNumber();
+    const receiptNo = await getNextReceiptNumber();
     const referenceId = transactionId && transactionId.trim() !== "" ? transactionId : receiptNo;
 
     const adminEmail =
