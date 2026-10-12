@@ -90,7 +90,7 @@ export const Lightbox: React.FC<LightboxProps> = ({
         className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative w-full aspect-16/10 sm:aspect-16/9 max-h-[72vh] rounded-2xl overflow-hidden shadow-2xl bg-black/40 border border-white/10">
+        <div className="relative w-full h-[45vh] sm:h-auto aspect-16/10 sm:aspect-16/9 max-h-[72vh] rounded-2xl overflow-hidden shadow-2xl bg-black/40 border border-white/10">
           <Image
             src={item.image}
             alt={item.title}

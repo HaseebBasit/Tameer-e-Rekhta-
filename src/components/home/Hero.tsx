@@ -62,7 +62,7 @@ export const Hero: React.FC = () => {
 
             {/* Right Column: Hero Visual matching visual guide */}
             <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-md aspect-4/3 sm:aspect-square lg:aspect-4/3 rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
+              <div className="relative w-full max-w-md h-64 sm:h-auto aspect-4/3 sm:aspect-square lg:aspect-4/3 rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
                 <Image
                   src="/images/hero_sprout.jpg"
                   alt="Ta'meer-e-Rekhta - Plant seedling sprouting in caring hands"

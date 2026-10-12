@@ -81,7 +81,7 @@ export default function VolunteerPage() {
           </div>
 
           <div className="lg:col-span-6 flex justify-center">
-            <div className="relative w-full max-w-lg aspect-4/3 sm:aspect-16/10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+            <div className="relative w-full max-w-lg h-64 sm:h-auto aspect-4/3 sm:aspect-16/10 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
               <Image
                 src="/images/volunteers.jpg"
                 alt="Ta'meer-e-Rekhta youth volunteers standing together"

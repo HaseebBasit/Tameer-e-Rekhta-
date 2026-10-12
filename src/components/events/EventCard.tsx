@@ -12,7 +12,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
   return (
     <div className="card-soft rounded-3xl overflow-hidden bg-white border border-gray-100 flex flex-col md:flex-row group transition-all duration-300 hover:shadow-xl">
       {/* Left side: Event Image */}
-      <div className="relative w-full md:w-72 lg:w-80 aspect-16/10 md:aspect-auto shrink-0 overflow-hidden bg-gray-100">
+      <div className="relative w-full md:w-72 lg:w-80 h-56 sm:h-64 md:h-auto aspect-16/10 md:aspect-auto shrink-0 overflow-hidden bg-gray-100">
         <Image
           src={event.image}
           alt={event.title}

@@ -11,7 +11,7 @@ export const WorkCard: React.FC<WorkCardProps> = ({ initiative }) => {
   return (
     <div className="card-soft rounded-3xl overflow-hidden flex flex-col bg-white border border-gray-100 group">
       {/* Image container */}
-      <div className="relative aspect-16/10 sm:aspect-16/9 overflow-hidden bg-gray-100">
+      <div className="relative w-full h-52 sm:h-auto aspect-16/10 sm:aspect-16/9 overflow-hidden bg-gray-100">
         <Image
           src={initiative.image}
           alt={initiative.title}

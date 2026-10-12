@@ -35,6 +35,11 @@ const config: Config = {
         cardHover: "0 12px 30px -4px rgba(20, 48, 34, 0.14)",
         glow: "0 0 25px rgba(79, 143, 58, 0.25)",
       },
+      aspectRatio: {
+        "4/3": "4 / 3",
+        "16/9": "16 / 9",
+        "16/10": "16 / 10",
+      },
     },
   },
   plugins: [],

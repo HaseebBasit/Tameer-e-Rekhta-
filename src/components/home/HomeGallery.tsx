@@ -42,7 +42,7 @@ export const HomeGallery: React.FC = () => {
             <Link
               key={item.id}
               href="/gallery"
-              className="group card-soft rounded-2xl overflow-hidden relative aspect-4/3 bg-gray-100 block transition-all duration-300 hover:shadow-xl"
+              className="group card-soft rounded-2xl overflow-hidden relative w-full h-60 sm:h-auto aspect-4/3 bg-gray-100 block transition-all duration-300 hover:shadow-xl"
             >
               <Image
                 src={item.image}

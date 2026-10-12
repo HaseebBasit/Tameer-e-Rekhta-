@@ -34,7 +34,7 @@ export const RecentActivities: React.FC = () => {
               className="card-soft rounded-2xl overflow-hidden flex flex-col group"
             >
               {/* Image Container */}
-              <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
+              <div className="relative w-full h-52 sm:h-auto aspect-4/3 overflow-hidden bg-gray-100">
                 <Image
                   src={item.image}
                   alt={item.title}

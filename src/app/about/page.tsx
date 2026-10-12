@@ -104,7 +104,7 @@ export default function AboutPage() {
           </div>
 
           <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-md aspect-4/3 sm:aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white">
+            <div className="relative w-full max-w-md h-64 sm:h-auto aspect-4/3 sm:aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white">
               <Image
                 src="/images/hero_sprout.jpg"
                 alt="Plant seedling in hands representing youth development"

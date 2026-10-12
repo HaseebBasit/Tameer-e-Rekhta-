@@ -61,7 +61,7 @@ export const GalleryGrid: React.FC = () => {
           <div
             key={item.id}
             onClick={() => setActivePhotoIndex(index)}
-            className="card-soft rounded-2xl overflow-hidden cursor-pointer group relative aspect-4/3 sm:aspect-square bg-gray-100"
+            className="card-soft rounded-2xl overflow-hidden cursor-pointer group relative w-full h-64 sm:h-auto aspect-4/3 sm:aspect-square bg-gray-100"
           >
             <Image
               src={item.image}
@@ -71,8 +71,8 @@ export const GalleryGrid: React.FC = () => {
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
-            {/* Hover overlay with zoom icon and title */}
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-pitch/80 via-brand-pitch/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white">
+            {/* Overlay with zoom icon and title (accessible on mobile & hover on desktop) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-pitch/85 via-brand-pitch/20 to-transparent opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5 text-white">
               <div className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
                 <ZoomIn className="w-4 h-4" />
               </div>
