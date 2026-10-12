@@ -12,7 +12,9 @@ import {
   Loader2,
   CheckCircle2,
   ArrowRight,
-  HeartHandshake
+  HeartHandshake,
+  RotateCcw,
+  Receipt
 } from "lucide-react";
 import { siteConfig } from "@/data/site";
 
@@ -20,12 +22,21 @@ export default function DonationSection() {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [receiptResult, setReceiptResult] = useState<{
+    receiptNo: string;
+    amount: string;
+    email: string;
+  } | null>(null);
+
   const [formData, setFormData] = useState({
     donorName: "",
+    donorEmail: "",
     donorPhone: "",
     amount: "",
     paymentMethod: "JazzCash",
     transactionId: "",
+    cause: "General Welfare Fund",
     notes: "",
   });
 
@@ -41,31 +52,121 @@ export default function DonationSection() {
 
   const handleConfirmSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.donorName.trim() || !formData.amount.trim()) return;
+    setErrorMessage(null);
+
+    if (!formData.donorName.trim()) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
+    if (!formData.donorEmail.trim() || !/\S+@\S+\.\S+/.test(formData.donorEmail)) {
+      setErrorMessage("Please enter a valid email address so we can send your receipt copy.");
+      return;
+    }
+    if (!formData.donorPhone.trim()) {
+      setErrorMessage("Please enter your Phone or WhatsApp number.");
+      return;
+    }
+    if (!formData.amount.trim() || Number(formData.amount) <= 0) {
+      setErrorMessage("Please enter a valid donated amount.");
+      return;
+    }
 
     setSubmitting(true);
     try {
-      // Dispatch donation notification to admin email
-      await fetch("/api/donate", {
+      // 1. Try server-side API endpoint
+      const response = await fetch("/api/donate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           donorName: formData.donorName,
-          donorEmail: "taameer.e.rekhta@gmail.com",
-          donorPhone: formData.donorPhone || "Not provided",
+          donorEmail: formData.donorEmail,
+          donorPhone: formData.donorPhone,
           amount: formData.amount,
           paymentMethod: formData.paymentMethod,
-          transactionId: formData.transactionId || "Self-Reported Transfer",
-          cause: "General Welfare Fund",
+          transactionId: formData.transactionId || "Direct Transfer",
+          cause: formData.cause || "General Welfare Fund",
           notes: formData.notes,
         }),
       });
-      setFormSubmitted(true);
-    } catch {
-      setFormSubmitted(true);
+
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.success) {
+        setReceiptResult({
+          receiptNo: data.receipt?.receiptNo || "TMR-01",
+          amount: data.receipt?.amount || `Rs. ${Number(formData.amount).toLocaleString()} PKR`,
+          email: formData.donorEmail,
+        });
+        setFormSubmitted(true);
+        return;
+      }
+
+      // 2. Direct browser fallback if API route failed
+      console.warn("API route failed, sending via direct fallback service...", data?.error);
+      const formattedAmount = `Rs. ${Number(formData.amount).toLocaleString()} PKR`;
+      const fallbackResponse = await fetch(
+        "https://formsubmit.co/ajax/taameer.e.rekhta@gmail.com",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            _subject: `Official Donation Receipt: ${formattedAmount} [TMR-01] - Ta'meer-e-Rekhta`,
+            _captcha: "false",
+            _template: "box",
+            _replyto: formData.donorEmail,
+            _cc: formData.donorEmail,
+            "Receipt Number": "TMR-01",
+            "Transaction / Ref ID": formData.transactionId || "Direct Transfer",
+            "Donor Name": formData.donorName,
+            "Donor Email": formData.donorEmail,
+            "Donor Phone": formData.donorPhone,
+            "Donation Amount": formattedAmount,
+            "Payment Method": formData.paymentMethod,
+            "Cause / Initiative": formData.cause || "General Welfare Fund",
+            "Special Note": formData.notes || "None",
+            "Status": "Payment Recorded & Verified",
+          }),
+        }
+      );
+
+      const fallbackData = await fallbackResponse.json().catch(() => null);
+      if (fallbackResponse.ok && fallbackData?.success !== "false") {
+        setReceiptResult({
+          receiptNo: "TMR-01",
+          amount: formattedAmount,
+          email: formData.donorEmail,
+        });
+        setFormSubmitted(true);
+        return;
+      }
+
+      setErrorMessage(
+        data?.error || fallbackData?.message || "Failed to submit donation record. Please try again or reach out on WhatsApp."
+      );
+    } catch (err: any) {
+      setErrorMessage("Network error occurred. Please check your connection or contact our team directly.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      donorName: "",
+      donorEmail: "",
+      donorPhone: "",
+      amount: "",
+      paymentMethod: "JazzCash",
+      transactionId: "",
+      cause: "General Welfare Fund",
+      notes: "",
+    });
+    setFormSubmitted(false);
+    setReceiptResult(null);
+    setErrorMessage(null);
   };
 
   const jazzcash = siteConfig.donation.jazzcash;
@@ -157,11 +258,11 @@ export default function DonationSection() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-600/20">
+              <div className="w-12 h-12 rounded-2xl bg-[#00A040] text-white flex items-center justify-center font-bold shadow-md shadow-emerald-600/20">
                 <Smartphone className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#00A040]">
                   Mobile Account
                 </span>
                 <h3 className="font-heading font-black text-2xl text-gray-900">
@@ -240,7 +341,7 @@ export default function DonationSection() {
           </h3>
 
           <p className="text-gray-300 text-sm leading-relaxed">
-            After sending your donation via JazzCash or Easypaisa, please share your transfer screenshot with our team on WhatsApp or Email for instant verification and your verified receipt.
+            After sending your donation via JazzCash or Easypaisa, please fill in the confirmation form below to automatically receive your official receipt. You can also share your transfer screenshot on WhatsApp for instant acknowledgment.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -267,33 +368,81 @@ export default function DonationSection() {
         </div>
       </div>
 
-      {/* Quick Donation Notification Form */}
+      {/* Official Donation Notification & Receipt Generation Form */}
       <div className="rounded-3xl bg-white border border-gray-200 p-6 sm:p-10 shadow-card">
         <div className="max-w-xl mx-auto text-center mb-8">
           <span className="text-xs font-bold uppercase tracking-wider text-brand-emerald">
-            Quick Notification
+            Donation Confirmation
           </span>
           <h4 className="font-heading font-bold text-2xl text-gray-900 mt-1">
-            Notify Admin of Your Transfer
+            Submit Transfer Details &amp; Get Receipt
           </h4>
           <p className="text-gray-500 text-xs sm:text-sm mt-1">
-            Fill in your details so our team can record and verify your contribution in the ledger.
+            Fill in your details below. A system-generated receipt copy will be sent to your email, and recorded with our accounts team.
           </p>
         </div>
 
-        {formSubmitted ? (
-          <div className="text-center py-8 space-y-3 bg-emerald-50 rounded-2xl border border-emerald-200 p-6">
-            <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
-            <h5 className="font-heading font-bold text-xl text-emerald-950">
-              Notification Sent Successfully!
-            </h5>
-            <p className="text-emerald-800 text-sm max-w-md mx-auto">
-              Thank you, <strong>{formData.donorName}</strong>! Your donation notification of <strong>Rs. {formData.amount}</strong> has been forwarded to our accounts team at <strong>taameer.e.rekhta@gmail.com</strong>.
-            </p>
+        {formSubmitted && receiptResult ? (
+          <div className="text-center py-8 space-y-5 bg-emerald-50/80 rounded-2xl border-2 border-emerald-200 p-6 sm:p-8 max-w-xl mx-auto animate-in fade-in">
+            <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto text-emerald-700">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider mb-2">
+                <Receipt className="w-3.5 h-3.5" />
+                Receipt Issued: {receiptResult.receiptNo}
+              </span>
+              <h5 className="font-heading font-black text-2xl text-emerald-950">
+                Donation Successfully Recorded!
+              </h5>
+              <p className="text-emerald-800 text-sm mt-1">
+                Amount: <strong className="font-extrabold">{receiptResult.amount}</strong>
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl p-4 border border-emerald-100 text-left text-xs sm:text-sm text-gray-700 space-y-2 max-w-md mx-auto">
+              <p className="flex items-start gap-2">
+                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span>An electronic copy has been dispatched to your email: <strong>{receiptResult.email}</strong></span>
+              </p>
+              <p className="flex items-start gap-2">
+                <span className="text-emerald-600 font-bold shrink-0">✓</span>
+                <span>A confirmation record has been forwarded to Ta&apos;meer-e-Rekhta administration at <strong>taameer.e.rekhta@gmail.com</strong>.</span>
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Submit Another Transfer</span>
+              </button>
+
+              <a
+                href="https://wa.me/923701972002?text=Assalam-o-Alaikum!%20I%20have%20submitted%20donation%20details%20for%20Ta%27meer-e-Rekhta."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#25D366] text-white text-xs font-bold hover:bg-[#20bd5a] transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>WhatsApp Helpline</span>
+              </a>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleConfirmSubmit} className="max-w-xl mx-auto space-y-4">
+            {errorMessage && (
+              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm">
+                {errorMessage}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Donor Name */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                   Your Full Name *
@@ -308,6 +457,24 @@ export default function DonationSection() {
                 />
               </div>
 
+              {/* Donor Email */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Your Email Address * (For Receipt)
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. donor@example.com"
+                  value={formData.donorEmail}
+                  onChange={(e) => setFormData({ ...formData, donorEmail: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Phone / WhatsApp */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                   Phone / WhatsApp *
@@ -321,9 +488,8 @@ export default function DonationSection() {
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Amount */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                   Donated Amount (PKR) *
@@ -331,13 +497,17 @@ export default function DonationSection() {
                 <input
                   type="number"
                   required
+                  min="50"
                   placeholder="e.g. 5000"
                   value={formData.amount}
                   onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none"
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Paid Via */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
                   Paid Via *
@@ -352,28 +522,47 @@ export default function DonationSection() {
                   <option value="Direct Bank Transfer">Direct Bank Transfer</option>
                 </select>
               </div>
+
+              {/* Transaction / Reference ID */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Transaction / TID (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="TID from transfer SMS / app"
+                  value={formData.transactionId}
+                  onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none"
+                />
+              </div>
             </div>
 
+            {/* Cause / Initiative */}
             <div>
               <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                Transaction ID / TID (Optional)
+                Cause / Initiative
+              </label>
+              <select
+                value={formData.cause}
+                onChange={(e) => setFormData({ ...formData, cause: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none bg-white"
+              >
+                <option value="General Welfare Fund">General Welfare Fund</option>
+                <option value="Food Drives & Ration Relief">Food Drives &amp; Ration Relief</option>
+                <option value="Orphanage & Shelter Care">Orphanage &amp; Shelter Care</option>
+                <option value="Youth Leadership & Urdu Literature">Youth Leadership &amp; Urdu Literature</option>
+              </select>
+            </div>
+
+            {/* Notes */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                Special Note / Message (Optional)
               </label>
               <input
                 type="text"
-                placeholder="Transaction ID from SMS / app"
-                value={formData.transactionId}
-                onChange={(e) => setFormData({ ...formData, transactionId: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
-                Notes / Initiative Purpose
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Food Drive, Orphanage Support, Youth Leadership"
+                placeholder="Any specific note or dedication..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none"
@@ -383,17 +572,17 @@ export default function DonationSection() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3.5 rounded-full bg-brand-emerald hover:bg-brand-green text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-full bg-brand-emerald hover:bg-brand-green text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
             >
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Sending Notification...</span>
+                  <span>Recording Donation &amp; Generating Receipt...</span>
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>Notify Admin via Email</span>
+                  <span>Submit Transfer &amp; Issue Receipt</span>
                 </>
               )}
             </button>

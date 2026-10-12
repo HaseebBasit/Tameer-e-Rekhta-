@@ -21,8 +21,8 @@ export const eventsData: EventItem[] = [
   {
     id: "event-1",
     slug: "naqsh-e-khiyaal-annual-literary-festival",
-    day: "01",
-    month: "LITERATURE",
+    day: "24",
+    month: "OCT",
     year: "2024",
     title: "نقشِ خیال: سالانہ مشاعرہ و ادبی کانفرنس",
     subtitle: "Naqsh-e-Khiyaal — Grand Annual Urdu Mushaira & Literary Assembly",
@@ -40,8 +40,8 @@ export const eventsData: EventItem[] = [
   {
     id: "event-2",
     slug: "community-food-and-ration-distribution-campaign",
-    day: "02",
-    month: "WELFARE",
+    day: "18",
+    month: "RAMADAN",
     year: "2024",
     title: "کمیونٹی فوڈ و راشن ڈسٹری بیوشن ڈرائیو",
     subtitle: "Community Food Drive & Emergency Dry Ration Distribution",
@@ -59,8 +59,8 @@ export const eventsData: EventItem[] = [
   {
     id: "event-3",
     slug: "children-shelter-home-and-orphanage-care-visit",
-    day: "03",
-    month: "SOCIAL",
+    day: "12",
+    month: "APR",
     year: "2024",
     title: "بچوں کے شیلٹر ہوم کا دورہ و افطار مہم",
     subtitle: "Children Shelter Home & Orphanage Compassion Visit",

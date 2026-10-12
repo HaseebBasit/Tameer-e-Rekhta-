@@ -74,10 +74,10 @@ function isValidEmail(email: string) {
 }
 
 const PAYMENT_METHOD_LABELS: Record<PaymentMethodValue, string> = {
-  easypaisa: "EasyPaisa (Test Mode)",
-  jazzcash: "JazzCash (Test Mode)",
-  bank: "Bank Transfer — Meezan Bank Ltd (Test Mode)",
-  card: "Test Card (Simulation)",
+  easypaisa: "EasyPaisa",
+  jazzcash: "JazzCash",
+  bank: "Bank Transfer — Meezan Bank Ltd",
+  card: "Direct Card Payment",
 };
 
 const CAUSE_LABELS: Record<string, string> = Object.fromEntries(CAUSES.map((c) => [c.value, c.label]));

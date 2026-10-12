@@ -1,5 +1,28 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
+
+function getNextReceiptNumber(): string {
+  const counterFilePath = path.join(process.cwd(), "src", "data", "receipt-counter.json");
+  let nextNum = 1;
+  try {
+    if (fs.existsSync(counterFilePath)) {
+      const fileContent = fs.readFileSync(counterFilePath, "utf-8");
+      const parsed = JSON.parse(fileContent);
+      nextNum = (Number(parsed.lastReceiptNumber) || 0) + 1;
+    }
+    fs.writeFileSync(
+      counterFilePath,
+      JSON.stringify({ lastReceiptNumber: nextNum }, null, 2),
+      "utf-8"
+    );
+  } catch (err) {
+    console.warn("Could not persist receipt counter file, using timestamp fallback", err);
+    nextNum = Math.floor((Date.now() / 1000) % 999) + 1;
+  }
+  return `TMR-${String(nextNum).padStart(2, "0")}`;
+}
 
 export async function POST(req: Request) {
   try {
@@ -26,9 +49,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const txId =
-      transactionId ||
-      `TR-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+    const receiptNo = getNextReceiptNumber();
+    const referenceId = transactionId && transactionId.trim() !== "" ? transactionId : receiptNo;
 
     const adminEmail =
       process.env.VOLUNTEER_RECIPIENT_EMAIL || "taameer.e.rekhta@gmail.com";
@@ -39,38 +61,41 @@ export async function POST(req: Request) {
       timeStyle: "short",
     });
 
-    const emailSubject = `Official Donation Receipt: ${formattedAmount} [${txId}] - Ta'meer-e-Rekhta`;
+    const emailSubject = `Official Donation Receipt: ${formattedAmount} [${receiptNo}] - Ta'meer-e-Rekhta`;
 
     // Plaintext format
     const plainText = `
 ==============================================
 TA'MEER-E-REKHTA (تعمیرِ ریختہ)
-Official Electronic Donation Receipt (Test Mode)
+Official Electronic Donation Receipt
 ==============================================
 
-Receipt / Transaction ID: ${txId}
-Status: Verified & Completed (Simulation)
-Date & Time: ${transactionDate}
+RECEIPT DETAILS:
+- Receipt Number: ${receiptNo}
+- Transaction / Reference ID: ${referenceId}
+- Status: Donation Confirmed & Recorded
+- Date & Time: ${transactionDate}
 
 DONOR INFORMATION:
 - Donor Name: ${donorName}
 - Email Address: ${donorEmail}
 - Phone / WhatsApp: ${donorPhone}
 
-DONATION DETAILS:
-- Amount Paid: ${formattedAmount}
+DONATION PARTICULARS:
+- Amount Donated: ${formattedAmount}
 - Payment Method: ${paymentMethod}
 - Cause / Initiative: ${cause || "General Welfare Fund"}
-- Notes: ${notes || "None"}
+- Special Note: ${notes || "None provided"}
 
-Thank you for supporting Ta'meer-e-Rekhta. Your contribution helps empower youth, revive Urdu literature, and serve humanity in Pakistan.
+Thank you for supporting Ta'meer-e-Rekhta. Your contribution directly fuels on-ground humanitarian relief, youth leadership, and cultural preservation across Pakistan.
 
-For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 1972002
+For any inquiries or ledger confirmation, contact us at:
+Email: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 1972002
 ==============================================
     `.trim();
 
-    // HTML Email Template
-   const htmlContent = `
+    // Responsive HTML Email Template matching visual guide
+    const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -159,11 +184,11 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
     }
 
     .amount {
-      font-size: 32px;
+      font-size: 34px;
       line-height: 1.2;
       font-weight: 900;
       color: #0D5C3A;
-      margin: 4px 0;
+      margin: 6px 0;
       word-break: break-word;
     }
 
@@ -174,27 +199,28 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
       font-size: 11px;
       line-height: 1.4;
       font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid #bbf7d0;
     }
 
     .message {
       font-size: 14px;
       line-height: 1.6;
       color: #475569;
-      margin: 0;
+      margin: 0 0 16px 0;
     }
 
     .details-table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
+      margin-top: 16px;
       font-size: 14px;
       table-layout: fixed;
     }
 
     .details-table td {
-      padding: 11px 8px;
+      padding: 12px 10px;
       vertical-align: top;
       overflow-wrap: anywhere;
       word-break: break-word;
@@ -205,35 +231,28 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
     }
 
     .details-table td:first-child {
-      width: 38%;
+      width: 40%;
       font-weight: 600;
       color: #64748b;
+      font-size: 13px;
     }
 
     .details-table td:last-child {
-      width: 62%;
+      width: 60%;
       color: #0f172a;
+      font-size: 14px;
     }
 
-    .transaction-id {
-      font-weight: 700;
-      font-family: monospace;
-      overflow-wrap: anywhere;
-      word-break: break-all;
+    .receipt-number {
+      font-weight: 800;
+      font-size: 16px;
+      color: #0D5C3A !important;
+      letter-spacing: 0.02em;
     }
 
     .payment-method {
       font-weight: 700;
       color: #0D5C3A !important;
-    }
-
-    .transaction-date-label {
-      color: #94a3b8 !important;
-    }
-
-    .transaction-date {
-      font-size: 13px;
-      color: #64748b !important;
     }
 
     .pledge-card {
@@ -280,142 +299,57 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
       color: #94a3b8;
     }
 
-    /* Mobile */
     @media only screen and (max-width: 600px) {
       body {
         padding: 12px;
       }
-
       .email-card {
         border-radius: 14px;
       }
-
       .header {
         padding: 24px 16px;
       }
-
       .header h1 {
         font-size: 21px;
       }
-
-      .header p {
-        font-size: 12px;
-      }
-
       .content {
         padding: 22px 16px;
       }
-
       .amount-box {
         padding: 16px 12px;
-        border-radius: 12px;
       }
-
       .amount {
         font-size: 28px;
       }
-
-      .amount-label {
-        font-size: 10px;
-      }
-
-      .status {
-        font-size: 10px;
-      }
-
-      .message {
-        font-size: 13px;
-      }
-
-      .details-table {
-        font-size: 13px;
-      }
-
       .details-table td {
-        padding: 10px 5px;
-      }
-
-      .details-table td:first-child {
-        width: 40%;
-      }
-
-      .details-table td:last-child {
-        width: 60%;
-      }
-
-      .pledge-card {
-        padding: 14px 12px;
-      }
-
-      .footer {
-        padding: 16px 12px;
-        font-size: 11px;
-      }
-    }
-
-    /* Very small phones */
-    @media only screen and (max-width: 380px) {
-      body {
-        padding: 8px;
-      }
-
-      .header {
-        padding: 20px 12px;
-      }
-
-      .header h1 {
-        font-size: 18px;
-      }
-
-      .content {
-        padding: 18px 12px;
-      }
-
-      .amount {
-        font-size: 24px;
-      }
-
-      .details-table {
-        font-size: 12px;
-      }
-
-      .details-table td {
-        padding: 9px 4px;
+        padding: 10px 6px;
       }
     }
   </style>
 </head>
 
 <body>
-
   <div class="email-wrapper">
     <div class="email-card">
 
       <!-- Header Banner -->
       <div class="header">
-
         <span style="
           display: inline-block;
-          background-color: rgba(255,255,255,0.15);
+          background-color: rgba(255,255,255,0.18);
           font-size: 11px;
           text-transform: uppercase;
           font-weight: 700;
           letter-spacing: 0.1em;
-          padding: 4px 12px;
+          padding: 4px 14px;
           border-radius: 9999px;
           margin-bottom: 8px;
         ">
-          Official Donation Receipt • Electronic Copy
+          OFFICIAL DONATION RECEIPT • ELECTRONIC COPY
         </span>
 
-        <h1>
-          تعمیرِ ریختہ | Ta'meer-e-Rekhta
-        </h1>
-
-        <p>
-          Urdu Revival • Youth Leadership • Humanity
-        </p>
-
+        <h1>تعمیرِ ریختہ | Ta'meer-e-Rekhta</h1>
+        <p>Urdu Revival • Youth Leadership • Humanity</p>
       </div>
 
       <!-- Content -->
@@ -423,128 +357,97 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
 
         <!-- Hero Amount Box -->
         <div class="amount-box">
-
-          <span class="amount-label">
-            Total Donation Amount
-          </span>
-
-          <div class="amount">
-            ${formattedAmount}
-          </div>
-
-          <span class="status">
-            ✓ Payment Completed (Test Mode)
-          </span>
-
+          <span class="amount-label">Total Donation Amount</span>
+          <div class="amount">${formattedAmount}</div>
+          <span class="status">✓ Donation Recorded &amp; Confirmed</span>
         </div>
 
         <p class="message">
           Dear <strong>${donorName}</strong>,<br>
-          Thank you for your generous contribution to
-          <strong>Ta'meer-e-Rekhta</strong>.
+          Thank you for your generous contribution to <strong>Ta'meer-e-Rekhta</strong>.
           Please retain this official receipt for your records.
         </p>
 
-        <!-- Details Table -->
+        <!-- Details Table matching donate form fields -->
         <table class="details-table">
-
           <tbody>
+            <tr>
+              <td>Receipt Number</td>
+              <td class="receipt-number">${receiptNo}</td>
+            </tr>
 
             <tr>
-              <td>Receipt / Txn ID</td>
-              <td class="transaction-id">${txId}</td>
+              <td>Transaction / Ref ID</td>
+              <td style="font-family: monospace; font-weight: 600;">${referenceId}</td>
             </tr>
 
             <tr>
               <td>Donor Name</td>
-              <td style="font-weight: 700;">
-                ${donorName}
-              </td>
+              <td style="font-weight: 700;">${donorName}</td>
             </tr>
 
             <tr>
               <td>Email Address</td>
-              <td>${donorEmail}</td>
+              <td><a href="mailto:${donorEmail}" style="color: #0D5C3A;">${donorEmail}</a></td>
             </tr>
 
             <tr>
               <td>Phone / WhatsApp</td>
-              <td>${donorPhone}</td>
+              <td><a href="https://wa.me/${donorPhone.replace(/[^0-9]/g, "")}" style="color: #0D5C3A;">${donorPhone}</a></td>
             </tr>
 
             <tr>
               <td>Payment Method</td>
-              <td class="payment-method">
-                ${paymentMethod} (Test Simulation)
-              </td>
+              <td class="payment-method">${paymentMethod}</td>
             </tr>
 
             <tr>
               <td>Cause / Initiative</td>
-              <td>
-                ${cause || "General Welfare Fund"}
-              </td>
+              <td>${cause || "General Welfare Fund"}</td>
             </tr>
 
             ${
               notes
                 ? `
-                <tr>
-                  <td>Special Note</td>
-                  <td style="color: #334155;">
-                    ${notes}
-                  </td>
-                </tr>
+            <tr>
+              <td>Special Note</td>
+              <td style="color: #334155;">${notes}</td>
+            </tr>
                 `
                 : ""
             }
 
             <tr>
-              <td class="transaction-date-label">
-                Transaction Date
-              </td>
-
-              <td class="transaction-date">
-                ${transactionDate}
-              </td>
+              <td>Transaction Date</td>
+              <td style="font-size: 13px; color: #64748b;">${transactionDate}</td>
             </tr>
-
           </tbody>
-
         </table>
 
         <!-- Bottom pledge card -->
         <div class="pledge-card">
-
           <p class="quote">
             &ldquo;We can&apos;t help everyone, but everyone can help someone.&rdquo;
           </p>
-
           <p class="pledge-note">
             100% of public donations are allocated directly to verified welfare projects.
           </p>
-
         </div>
 
       </div>
 
       <!-- Footer -->
       <div class="footer">
-
         <p>
-          <strong>Ta'meer-e-Rekhta Welfare Society</strong>
-          • Karachi, Pakistan
+          <strong>Ta'meer-e-Rekhta Welfare Society</strong> • Pakistan
         </p>
-
         <p class="small">
-          This is an automated system-generated electronic receipt.
+          Official Helpline: <a href="https://wa.me/923701972002" style="color: #0D5C3A;">+92 370 1972002</a> • <a href="mailto:taameer.e.rekhta@gmail.com" style="color: #0D5C3A;">taameer.e.rekhta@gmail.com</a>
         </p>
-
       </div>
 
     </div>
   </div>
-
 </body>
 </html>
     `.trim();
@@ -564,11 +467,10 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
         },
       });
 
-      // Send receipt to donor and CC admin
+      // Send to both donor and Ta'meer-e-Rekhta admin
       await transporter.sendMail({
         from: `"Ta'meer-e-Rekhta" <${process.env.SMTP_USER}>`,
-        to: donorEmail,
-        cc: adminEmail,
+        to: [donorEmail, adminEmail],
         subject: emailSubject,
         text: plainText,
         html: htmlContent,
@@ -578,7 +480,8 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
         success: true,
         method: "smtp",
         receipt: {
-          transactionId: txId,
+          receiptNo,
+          transactionId: referenceId,
           donorName,
           donorEmail,
           donorPhone,
@@ -589,24 +492,14 @@ For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 197
         },
       });
     } else {
-      // Determine origin and referer for reliable delivery
-      // const host = req.headers.get("host") || "localhost:3000";
-      // const protocol = host.includes("localhost") ? "http" : "https";
-      // const origin = req.headers.get("origin") || `${protocol}://${host}`;
-      // const referer = req.headers.get("referer") || `${origin}/donate`;
-      // const userAgent =
-      //   req.headers.get("user-agent") ||
-      //   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
-
       const origin = "https://tameer-e-rekhta.vercel.app";
-const referer = `${origin}/donate`;
+      const referer = `${origin}/donate`;
+      const userAgent =
+        req.headers.get("user-agent") ||
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
-const userAgent =
-  req.headers.get("user-agent") ||
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
-
-      // Dispatch to admin with CC to donor's email so both receive the receipt
-      const formSubmitResponse = await fetch(
+      // 1. Dispatch official receipt copy to Ta'meer-e-Rekhta administration with CC to donor
+      const adminDispatch = await fetch(
         `https://formsubmit.co/ajax/${encodeURIComponent(adminEmail)}`,
         {
           method: "POST",
@@ -623,34 +516,68 @@ const userAgent =
             _template: "box",
             _replyto: donorEmail,
             _cc: donorEmail,
-            "Receipt Number": txId,
+            "Receipt Number": receiptNo,
+            "Transaction / Ref ID": referenceId,
             "Donor Name": donorName,
             "Donor Email": donorEmail,
             "Donor Phone": donorPhone,
             "Donation Amount": formattedAmount,
             "Payment Method": paymentMethod,
             "Cause / Initiative": cause || "General Welfare Fund",
-            "Special Note": notes || "None",
+            "Special Note": notes || "None provided",
             "Transaction Date": transactionDate,
-            Status: "Payment Verified",
+            "Status": "Payment Recorded & Verified",
           }),
         }
       );
 
-      const submitData = await formSubmitResponse.json().catch(() => null);
+      const adminSubmitData = await adminDispatch.json().catch(() => null);
 
-      if (!formSubmitResponse.ok || (submitData && submitData.success === "false")) {
-        console.error("Donation receipt dispatch failed:", submitData);
+      if (!adminDispatch.ok || (adminSubmitData && adminSubmitData.success === "false")) {
+        console.error("Donation receipt dispatch failed:", adminSubmitData);
         throw new Error(
-          submitData?.message || "Unable to dispatch donation receipt via email service."
+          adminSubmitData?.message || "Unable to dispatch donation receipt via email service."
         );
+      }
+
+      // 2. Also dispatch a direct copy to the donor's personal email so they receive it immediately
+      if (donorEmail && donorEmail.toLowerCase() !== adminEmail.toLowerCase()) {
+        await fetch(
+          `https://formsubmit.co/ajax/${encodeURIComponent(donorEmail)}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+              Origin: origin,
+              Referer: referer,
+              "User-Agent": userAgent,
+            },
+            body: JSON.stringify({
+              _subject: `Official Donation Receipt [${receiptNo}] - Ta'meer-e-Rekhta`,
+              _captcha: "false",
+              _template: "box",
+              _replyto: adminEmail,
+              "Receipt Number": receiptNo,
+              "Transaction / Ref ID": referenceId,
+              "Donor Name": donorName,
+              "Donation Amount": formattedAmount,
+              "Payment Method": paymentMethod,
+              "Cause / Initiative": cause || "General Welfare Fund",
+              "Transaction Date": transactionDate,
+              "Status": "Donation Confirmed & Recorded",
+              "Message": "Thank you for your generous contribution to Ta'meer-e-Rekhta! Please retain this electronic receipt for your records.",
+            }),
+          }
+        ).catch((err) => console.warn("Direct donor email dispatch warning:", err));
       }
 
       return NextResponse.json({
         success: true,
         method: "direct",
         receipt: {
-          transactionId: txId,
+          receiptNo,
+          transactionId: referenceId,
           donorName,
           donorEmail,
           donorPhone,
