@@ -42,7 +42,7 @@ export const DonationReceipt: React.FC<DonationReceiptProps> = ({
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-[11px] uppercase font-bold tracking-wider mb-2.5 backdrop-blur-sm">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Official Electronic Receipt (Test Mode)</span>
+            <span>Official Electronic Receipt</span>
           </div>
           <h2 className="font-heading font-extrabold text-2xl sm:text-3xl tracking-tight">
             تعمیرِ ریختہ • Ta&apos;meer-e-Rekhta
@@ -102,7 +102,7 @@ export const DonationReceipt: React.FC<DonationReceiptProps> = ({
                 Payment Channel
               </span>
               <span className="font-bold text-gray-900 text-xs">
-                {receipt.paymentMethod} (Test Simulation)
+                {receipt.paymentMethod} ({receipt.amount})
               </span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export const DonationReceipt: React.FC<DonationReceiptProps> = ({
             <div>
               <p className="font-semibold">Electronic Receipt Dispatched!</p>
               <p className="text-emerald-700 mt-0.5 leading-relaxed text-[11px]">
-                A copy of this electronic receipt has been dispatched to{" "}
+                A copy of this electronic receipt has been dispatched to {receipt.donorEmail}
                 <strong>{receipt.donorEmail}</strong> and recorded in the Ta&apos;meer-e-Rekhta admin ledger.
               </p>
             </div>

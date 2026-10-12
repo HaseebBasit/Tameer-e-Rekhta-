@@ -39,6 +39,12 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
 
         {/* Details */}
         <div className="flex-1 space-y-2">
+          {event.badge && (
+            <div className="inline-block text-[11px] font-bold text-brand-forest bg-emerald-50 border border-emerald-200/60 px-2.5 py-0.5 rounded-full">
+              {event.badge}
+            </div>
+          )}
+
           <h3 className="font-heading font-bold text-xl text-brand-pitch group-hover:text-brand-emerald transition-colors">
             {event.title}
           </h3>
@@ -69,10 +75,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
             href="/volunteer"
             variant="outline"
             size="sm"
-            className="w-full sm:w-auto text-xs font-semibold py-2 px-4"
+            className="w-full sm:w-auto text-xs font-semibold py-2.5 px-4.5 border-brand-emerald/30 text-brand-forest hover:bg-brand-emerald hover:text-white transition-all shadow-sm"
             icon={<ArrowRight className="w-3.5 h-3.5" />}
           >
-            Participate
+            Volunteer With Us
           </Button>
         </div>
       </div>

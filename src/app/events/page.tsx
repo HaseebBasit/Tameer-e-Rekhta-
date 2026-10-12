@@ -8,9 +8,9 @@ import { eventsData } from "@/data/events";
 import { EventCard } from "@/components/events/EventCard";
 
 export const metadata: Metadata = {
-  title: "Upcoming Events | Ta'meer-e-Rekhta",
+  title: "Flagship Events & Initiatives | Ta'meer-e-Rekhta",
   description:
-    "Discover and participate in upcoming Ta'meer-e-Rekhta events: Food Drives, Urdu Literature Sessions, Orphanage Care, and Youth Workshops.",
+    "Explore hallmark events and community initiatives hosted by Ta'meer-e-Rekhta: Naqsh-e-Khiyaal Urdu Literary Festival, Food Drives, and Orphanage Care Visits.",
 };
 
 export default function EventsPage() {
@@ -19,8 +19,8 @@ export default function EventsPage() {
       <Container size="wide">
         {/* Header Section */}
         <SectionHeading
-          title="Upcoming Events"
-          description="Join our upcoming events and be a part of the change."
+          title="Flagship Events & Initiatives"
+          description="Hallmark literary festivals, community welfare drives, and social outreach campaigns organized by Ta'meer-e-Rekhta."
           align="center"
         />
 
@@ -40,10 +40,10 @@ export default function EventsPage() {
             className="font-bold text-sm px-8 py-3 bg-brand-forest hover:bg-brand-emerald text-white shadow-md"
             icon={<Sparkles className="w-4 h-4" />}
           >
-            View All Events & Join
+            Become a Volunteer & Join Future Drives
           </Button>
-          <p className="text-xs text-gray-500 mt-2">
-            Want to propose or host an event in your city? Reach out to our events team.
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            Want to propose or host a Ta&apos;meer-e-Rekhta drive in your city? Reach out to our community team.
           </p>
         </div>
       </Container>

@@ -8,6 +8,7 @@ export async function POST(req: Request) {
       fullName,
       email,
       phone,
+      instagramId,
       city,
       age,
       areaOfInterest,
@@ -46,6 +47,7 @@ APPLICANT DETAILS:
 - Full Name: ${fullName}
 - Email: ${email}
 - Phone / WhatsApp: ${phone}
+- Instagram ID: ${instagramId || "Not specified"}
 - City: ${city}
 - Age: ${age || "Not specified"}
 - Area of Interest: ${areaOfInterest}
@@ -241,6 +243,20 @@ SUBMISSION INFO:
           </div>
         </div>
 
+        <!-- Instagram ID -->
+        <div class="data-row">
+          <span class="data-label">Instagram ID</span>
+          <div class="data-val">
+            ${
+              instagramId
+                ? `<a href="https://instagram.com/${instagramId.replace(/^@/, "")}" target="_blank" style="color: #0D5C3A; font-weight: 600;">${
+                    instagramId.startsWith("@") ? instagramId : "@" + instagramId
+                  }</a>`
+                : `<span style="color: #94a3b8; font-weight: 400;">Not specified</span>`
+            }
+          </div>
+        </div>
+
         <!-- City & Age -->
         <div class="data-row">
           <span class="data-label">City &amp; Age</span>
@@ -339,6 +355,7 @@ SUBMISSION INFO:
             "Applicant Name": fullName,
             "Email Address": email,
             "Phone / WhatsApp": phone,
+            "Instagram ID": instagramId || "Not specified",
             "City": city,
             "Age": age || "Not specified",
             "Area of Interest": areaOfInterest,
