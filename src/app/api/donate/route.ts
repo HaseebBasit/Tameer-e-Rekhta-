@@ -65,7 +65,7 @@ DONATION DETAILS:
 
 Thank you for supporting Ta'meer-e-Rekhta. Your contribution helps empower youth, revive Urdu literature, and serve humanity in Pakistan.
 
-For questions, contact us at: info@tameer-e-rekhta.org | WhatsApp: 0312-3456789
+For questions, contact us at: taameer.e.rekhta@gmail.com | WhatsApp: +92 370 1972002
 ==============================================
     `.trim();
 

@@ -246,7 +246,7 @@ export default function DonationSection() {
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             {/* WhatsApp Chat Button */}
             <a
-              href="https://wa.me/923075615688?text=Assalam-o-Alaikum!%20I%20have%20sent%20a%20donation%20for%20Ta%27meer-e-Rekhta.%20Here%20is%20my%20payment%20proof:"
+              href="https://wa.me/923701972002?text=Assalam-o-Alaikum!%20I%20have%20sent%20a%20donation%20for%20Ta%27meer-e-Rekhta.%20Here%20is%20my%20payment%20proof:"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-sm shadow-lg shadow-emerald-900/40 transition-transform hover:scale-105"

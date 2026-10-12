@@ -5,6 +5,7 @@ export interface TeamMember {
   category: "founder" | "president" | "core";
   bio: string;
   image: string;
+  imagePosition?: string;
   linkedin?: string;
   twitter?: string;
   email?: string;
@@ -18,7 +19,7 @@ export const founderMember: TeamMember = {
   category: "founder",
   bio: "Visionary founder of Ta'meer-e-Rekhta, dedicated to reviving the Urdu language, nurturing youth leadership, and driving humanitarian welfare across Pakistan.",
   image: "/images/team/zoraiz-ali.jpg",
-  email: "taameer.e.rekhta@gmail.com",
+  email: "zoraizali757@gmail.com",
 };
 
 export const presidentMember: TeamMember = {
@@ -28,7 +29,7 @@ export const presidentMember: TeamMember = {
   category: "president",
   bio: "Leading executive operations and organizational strategy, championing youth empowerment initiatives, community welfare drives, and cultural enrichment.",
   image: "/images/team/hafsa-arif.jpg",
-  email: "taameer.e.rekhta@gmail.com",
+  email: "arifhafsa446@gmail.com",
 };
 
 export const coreTeamMembers: TeamMember[] = [

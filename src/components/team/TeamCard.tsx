@@ -18,6 +18,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ member }) => {
           fill
           sizes="(max-width: 640px) 112px, 128px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
+          style={{ objectPosition: member.imagePosition || "center" }}
         />
       </div>
 

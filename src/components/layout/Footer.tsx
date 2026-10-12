@@ -94,7 +94,7 @@ export const Footer: React.FC = () => {
                 <Linkedin className="w-4 h-4" />
               </a>
               <a
-                href="https://wa.me/923075615688"
+                href="https://wa.me/923701972002"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-brand-emerald hover:border-brand-emerald transition-all"

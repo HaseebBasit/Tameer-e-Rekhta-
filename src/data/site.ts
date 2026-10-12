@@ -42,8 +42,8 @@ export const siteConfig: SiteConfig = {
     "Ta'meer-e-Rekhta is a passionate youth-led organization working for Urdu Revival, Youth Leadership Events & Welfare of Mankind in Pakistan. We believe in preserving our cultural identity while serving humanity with compassion.",
   contact: {
     email: "taameer.e.rekhta@gmail.com",
-    phone: "0307-5615688",
-    whatsapp: "+92 307 5615688",
+    phone: "+92 370 1972002",
+    whatsapp: "+92 370 1972002",
     address: "Karachi, Pakistan",
     city: "Karachi",
     country: "Pakistan",
@@ -54,7 +54,7 @@ export const siteConfig: SiteConfig = {
     { name: "Instagram", href: "https://instagram.com/tameer_e_rekhta", icon: "Instagram" },
     { name: "Facebook", href: "https://facebook.com", icon: "Facebook" },
     { name: "LinkedIn", href: "https://linkedin.com", icon: "Linkedin" },
-    { name: "WhatsApp", href: "https://wa.me/923075615688", icon: "MessageCircle" },
+    { name: "WhatsApp", href: "https://wa.me/923701972002", icon: "MessageCircle" },
   ],
   donation: {
     jazzcash: {
