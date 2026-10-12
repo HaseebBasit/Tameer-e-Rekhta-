@@ -161,10 +161,10 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-          <p>&copy; 2026 Ta&apos;meer-e-Rekhta, All Rights Reserved.</p>
-          <p className="flex items-center gap-1.5">
-            <span>Designed by</span>
-            <span>Haseeb Basit</span>
+          <p>&copy; 2026 Ta&apos;meer-e-Rekhta. All Rights Reserved.</p>
+          <p className="flex items-center gap-1 text-gray-400 hover:text-brand-lime transition-colors">
+            <span>Made by</span>
+            <span className="font-semibold text-gray-200">Haseeb Basit</span>
           </p>
         </div>
       </Container>
