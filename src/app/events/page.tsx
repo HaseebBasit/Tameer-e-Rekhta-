@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-import { Calendar, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/Button";
@@ -10,7 +10,7 @@ import { EventCard } from "@/components/events/EventCard";
 export const metadata: Metadata = {
   title: "Flagship Events & Initiatives | Ta'meer-e-Rekhta",
   description:
-    "Explore hallmark events and community initiatives hosted by Ta'meer-e-Rekhta: Naqsh-e-Khiyaal Urdu Literary Festival, Food Drives, and Orphanage Care Visits.",
+    "Explore hallmark events and community initiatives hosted by Ta'meer-e-Rekhta: Naqsh-e-Khiyaal Mushaira & Qawwali Night, Ramadan Food Drives, and Orphanage Care Visits.",
 };
 
 export default function EventsPage() {
@@ -20,18 +20,18 @@ export default function EventsPage() {
         {/* Header Section */}
         <SectionHeading
           title="Flagship Events & Initiatives"
-          description="Hallmark literary festivals, community welfare drives, and social outreach campaigns organized by Ta'meer-e-Rekhta."
+          description="Hallmark literary gatherings, community food drives, and social outreach campaigns organized by Ta'meer-e-Rekhta."
           align="center"
         />
 
-        {/* Events Timeline / List matching visual guide */}
+        {/* Events Timeline / List */}
         <div className="max-w-4xl mx-auto space-y-6">
           {eventsData.map((ev) => (
             <EventCard key={ev.id} event={ev} />
           ))}
         </div>
 
-        {/* Bottom Action Button matching visual guide */}
+        {/* Bottom Action Button */}
         <div className="pt-8 flex flex-col items-center justify-center">
           <Button
             href="/volunteer"

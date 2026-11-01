@@ -1,108 +1,107 @@
 import React from "react";
 import { Metadata } from "next";
-import { Mail, Phone, MapPin, Instagram } from "lucide-react";
+import { Mail, Phone, MessageCircle, Instagram, MapPin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { ContactForm } from "@/components/contact/ContactForm";
 import { siteConfig } from "@/data/site";
+import { ContactForm } from "@/components/contact/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Us | Ta'meer-e-Rekhta",
   description:
-    "Get in touch with Ta'meer-e-Rekhta. Reach out for volunteering inquiries, partnerships, event collaborations, or media coverage.",
+    "Get in touch with Ta'meer-e-Rekhta for inquiries, volunteer partnerships, literary event collaborations, or humanitarian initiatives across Pakistan.",
 };
 
 export default function ContactPage() {
-  const contactDetails = [
+  const contactMethods = [
     {
-      label: "Email",
+      title: "Email Inquiries",
       value: siteConfig.contact.email,
       href: `mailto:${siteConfig.contact.email}`,
       icon: Mail,
-      color: "text-emerald-700 bg-emerald-50 border-emerald-200",
+      sublabel: "Our team typically responds within 24-48 hours",
     },
     {
-      label: "Phone",
+      title: "Direct Calling",
       value: siteConfig.contact.phone,
-      href: `tel:${siteConfig.contact.phone}`,
+      href: `tel:${siteConfig.contact.phone.replace(/[^0-9+]/g, "")}`,
       icon: Phone,
-      color: "text-blue-700 bg-blue-50 border-blue-200",
+      sublabel: "Available Monday - Saturday, 10am - 6pm PKT",
     },
     {
-      label: "Location",
-      value: siteConfig.contact.address,
-      href: "#location-map",
-      icon: MapPin,
-      color: "text-teal-700 bg-teal-50 border-teal-200",
+      title: "WhatsApp Helpline",
+      value: siteConfig.contact.whatsapp,
+      href: `https://wa.me/${siteConfig.contact.whatsapp.replace(/[^0-9]/g, "")}`,
+      icon: MessageCircle,
+      sublabel: "Fastest response for volunteer & general queries",
     },
     {
-      label: "Instagram",
+      title: "Instagram",
       value: siteConfig.contact.instagramHandle,
       href: siteConfig.contact.instagramUrl,
       icon: Instagram,
-      color: "text-pink-700 bg-pink-50 border-pink-200",
+      sublabel: "Follow daily campaign highlights and updates",
     },
   ];
 
   return (
     <div className="py-10 sm:py-16 space-y-16">
       <Container size="wide">
-        {/* Header matching visual guide */}
+        {/* Header Section */}
         <SectionHeading
           title="Get in Touch"
-          description="We'd love to hear from you!"
+          description="Have questions or want to collaborate? We'd love to hear from you."
           align="center"
         />
 
-        {/* 2-Column Desktop Layout matching visual guide */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start max-w-5xl mx-auto">
-          {/* Left Column: Direct Info Cards */}
-          <div className="lg:col-span-5 space-y-5">
+        {/* 2-Column Section matching visual guide */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 max-w-6xl mx-auto">
+          {/* Left Column: Direct Contact Info */}
+          <div className="lg:col-span-5 space-y-4">
+            <h3 className="font-heading font-extrabold text-xl text-brand-pitch mb-4">
+              Contact Information
+            </h3>
+
             <div className="space-y-4">
-              {contactDetails.map((item) => {
-                const IconComponent = item.icon;
+              {contactMethods.map((method) => {
+                const IconComponent = method.icon;
                 return (
                   <a
-                    key={item.label}
-                    href={item.href}
-                    target={item.href.startsWith("http") ? "_blank" : undefined}
-                    rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="card-soft rounded-2xl p-4 sm:p-5 flex items-center gap-4 border border-gray-100 group transition-all"
+                    key={method.title}
+                    href={method.href}
+                    target={method.href.startsWith("http") ? "_blank" : undefined}
+                    rel={method.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="card-soft rounded-2xl p-5 flex items-start gap-4 group block hover:border-brand-emerald/30 transition-all border border-gray-100"
                   >
-                    <div
-                      className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${item.color}`}
-                    >
+                    <div className="w-12 h-12 rounded-xl bg-brand-mint text-brand-emerald flex items-center justify-center shrink-0 transition-colors group-hover:bg-brand-emerald group-hover:text-white">
                       <IconComponent className="w-5 h-5" />
                     </div>
 
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                        {item.label}
-                      </span>
-                      <span className="text-sm sm:text-base font-bold text-brand-pitch group-hover:text-brand-emerald transition-colors">
-                        {item.value}
-                      </span>
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                        {method.title}
+                      </h4>
+                      <p className="text-sm font-bold text-brand-pitch mt-0.5 group-hover:text-brand-emerald transition-colors">
+                        {method.value}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {method.sublabel}
+                      </p>
                     </div>
                   </a>
                 );
               })}
             </div>
-
-            {/* Quick summary note */}
-            <div className="p-5 rounded-2xl bg-brand-mint/40 border border-brand-green/20 text-xs text-brand-dark leading-relaxed">
-              <span className="font-bold block mb-1">Quick Response Guarantee</span>
-              Our volunteer coordinators typically respond to inquiries and collaboration requests within 24 hours.
-            </div>
           </div>
 
-          {/* Right Column: Contact Form matching visual guide */}
+          {/* Right Column: Contact Form */}
           <div className="lg:col-span-7">
             <ContactForm />
           </div>
         </div>
       </Container>
 
-      {/* Dark Map / Location section matching visual guide */}
+      {/* Dark Map / Location section */}
       <section id="location-map" className="bg-brand-pitch text-white py-16 border-y border-white/5 relative overflow-hidden">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-emerald/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -113,11 +112,11 @@ export default function ContactPage() {
             </div>
 
             <h3 className="font-heading font-extrabold text-2xl sm:text-3xl text-white">
-              Karachi, Pakistan
+              Karachi &amp; Bahawalpur, Pakistan
             </h3>
 
             <p className="text-gray-300 text-sm leading-relaxed">
-              Headquartered in Karachi with expanding volunteer outreach, food ration distribution, and youth chapters across Lahore, Hyderabad, and surrounding regions.
+              Headquartered in Karachi with dedicated volunteer teams, community food drives, and youth chapters active across Karachi, Bahawalpur, Lahore, and Islamabad.
             </p>
           </div>
         </Container>

@@ -569,7 +569,7 @@ export default function DonationSection() {
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-brand-emerald focus:ring-2 focus:ring-brand-mint outline-none bg-white"
               >
                 <option value="General Welfare Fund">General Welfare Fund</option>
-                <option value="Food Drives & Ration Relief">Food Drives &amp; Ration Relief</option>
+                <option value="Food Distribution Drives">Food Distribution Drives</option>
                 <option value="Orphanage & Shelter Care">Orphanage &amp; Shelter Care</option>
                 <option value="Youth Leadership & Urdu Literature">Youth Leadership &amp; Urdu Literature</option>
               </select>

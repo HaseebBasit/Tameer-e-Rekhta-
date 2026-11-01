@@ -180,7 +180,7 @@ export const VolunteerForm: React.FC = () => {
           </p>
 
           <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl text-xs text-emerald-800 max-w-md mx-auto">
-            ✓ Your volunteer details have been forwarded to the Ta&apos;meer-e-Rekhta administration.
+            ✓ Your volunteer details have been forwarded to the Ta&apos;meer-e-Rekhta administration and recorded in our volunteer spreadsheet database.
           </div>
 
           <div className="pt-4">
@@ -371,7 +371,7 @@ export const VolunteerForm: React.FC = () => {
                 }`}
               >
                 <option value="">Select your interest...</option>
-                <option value="Food Drives">Food Drives & Ration Relief</option>
+                <option value="Food Drives">Food Drives & Community Welfare</option>
                 <option value="Orphanage Care">Orphanage Visits & Child Mentorship</option>
                 <option value="Youth Leadership">Youth Leadership & Workshops</option>
                 <option value="Urdu Literature">Urdu Literature, Poetry & Arts</option>

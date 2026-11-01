@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import type { ReceiptData } from "./DonationReceipt";
 
 const CAUSES = [
-  { value: "food_drives", label: "Food Drives & Ration Relief" },
+  { value: "food_drives", label: "Food Distribution Drives" },
   { value: "orphanage_care", label: "Orphanage Care" },
   { value: "youth_leadership", label: "Youth Leadership" },
   { value: "general_welfare", label: "General Welfare Fund" },

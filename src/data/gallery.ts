@@ -19,11 +19,11 @@ export const galleryCategories = [
 export const galleryItems: GalleryItem[] = [
   {
     id: "gal-1",
-    title: "نقشِ خیال | Annual Urdu Mushaira Stage & Assembly",
+    title: "نقشِ خیال | Mushaira & Qawwali Night Stage & Assembly",
     category: "events",
     categoryLabel: "Events",
     image: "/images/gallery/naqsh-stage.jpg",
-    date: "Flagship Edition",
+    date: "12 October",
     location: "Bahawalpur",
   },
   {
@@ -46,11 +46,11 @@ export const galleryItems: GalleryItem[] = [
   },
   {
     id: "gal-4",
-    title: "Youth Audience and Literature Lovers at Naqsh-e-Khiyaal",
+    title: "Audience & Poetry Lovers at Naqsh-e-Khiyaal Mushaira & Qawwali Night",
     category: "events",
     categoryLabel: "Events",
     image: "/images/gallery/naqsh-audience.jpg",
-    date: "Annual Festival",
+    date: "12 October",
     location: "Bahawalpur",
   },
   {
@@ -100,11 +100,11 @@ export const galleryItems: GalleryItem[] = [
   },
   {
     id: "gal-10",
-    title: "Rural Sindh Food Distribution and Ration Care Outreach",
+    title: "Rural Sindh Community Food Distribution Outreach",
     category: "food",
     categoryLabel: "Food Drives",
     image: "/images/gallery/sindh-ration.jpg",
-    date: "Ration Drive",
+    date: "Food Drive",
     location: "Sindh",
   },
   {

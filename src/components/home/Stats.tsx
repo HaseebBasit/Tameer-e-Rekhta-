@@ -11,8 +11,8 @@ export const Stats: React.FC = () => {
       icon: Calendar,
     },
     {
-      number: "2K+",
-      label: "People Reached",
+      number: "100s",
+      label: "Lives Touched",
       sublabel: "Through food & youth programs",
       icon: Users,
     },
@@ -23,9 +23,9 @@ export const Stats: React.FC = () => {
       icon: HeartHandshake,
     },
     {
-      number: "3+",
+      number: "4",
       label: "Cities",
-      sublabel: "Karachi, Lahore & Hyderabad",
+      sublabel: "Karachi, Bahawalpur, Lahore, Islamabad",
       icon: MapPin,
     },
   ];

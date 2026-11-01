@@ -13,7 +13,7 @@ const TRUST_PILLARS = [
   {
     icon: Heart,
     title: "Direct Impact",
-    description: "Contributions support emergency ration distribution, orphan care, and youth literacy.",
+    description: "Contributions support community food distribution, orphan care, and youth literacy.",
   },
   {
     icon: Lock,

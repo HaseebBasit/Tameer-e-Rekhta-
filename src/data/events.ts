@@ -10,7 +10,7 @@ export interface EventItem {
   location: string;
   venue: string;
   time: string;
-  category: "Welfare" | "Literature" | "Social" | "Leadership";
+  category: "Welfare" | "Literature" | "Social" | "Leadership" | "Mushaira & Qawwali Night";
   image: string;
   isUpcoming: boolean;
   registrationOpen: boolean;
@@ -20,41 +20,41 @@ export interface EventItem {
 export const eventsData: EventItem[] = [
   {
     id: "event-1",
-    slug: "naqsh-e-khiyaal-annual-literary-festival",
-    day: "24",
+    slug: "naqsh-e-khiyaal-mushaira-and-qawwali-night",
+    day: "12",
     month: "OCT",
     year: "2024",
-    title: "نقشِ خیال: سالانہ مشاعرہ و ادبی کانفرنس",
-    subtitle: "Naqsh-e-Khiyaal — Grand Annual Urdu Mushaira & Literary Assembly",
+    title: "نقشِ خیال: مشاعرہ و قوالی نائٹ",
+    subtitle: "Naqsh-e-Khiyaal — Mushaira & Qawwali Night",
     description:
-      "A premier flagship cultural gathering uniting celebrated poets, young writers, and literature enthusiasts on a grand open-air stage to celebrate Urdu poetry, ghazal recitation, and artistic heritage.",
-    location: "Bahawalpur & Regional Centers",
+      "A landmark cultural evening held on 12 October in Bahawalpur, uniting celebrated poets, young writers, and literature enthusiasts for an enchanting session of Urdu poetry, ghazal recitations, and traditional Sufi Qawwali.",
+    location: "Bahawalpur",
     venue: "Main Open-Air Auditorium",
-    time: "Evening Mushaira Session",
-    category: "Literature",
+    time: "Evening Mushaira & Qawwali Session",
+    category: "Mushaira & Qawwali Night",
     image: "/images/events/naqsh-e-khiyaal.jpg",
     isUpcoming: false,
     registrationOpen: false,
-    badge: "Flagship Literary Event",
+    badge: "Mushaira & Qawwali Night • 12 October",
   },
   {
     id: "event-2",
-    slug: "community-food-and-ration-distribution-campaign",
-    day: "18",
+    slug: "community-food-drive-ramadan-campaign",
+    day: "",
     month: "RAMADAN",
     year: "2024",
-    title: "کمیونٹی فوڈ و راشن ڈسٹری بیوشن ڈرائیو",
-    subtitle: "Community Food Drive & Emergency Dry Ration Distribution",
+    title: "کمیونٹی فوڈ ڈرائیو مہم (رمضان المبارک)",
+    subtitle: "Community Food Drive — Ramadan Campaign",
     description:
-      "A compassionate humanitarian campaign providing freshly prepared hot meals and month-long dry ration packages to underprivileged daily-wage earners and deserving families across local communities.",
+      "A compassionate humanitarian initiative organized during the holy month of Ramadan, providing freshly cooked hot meals, Iftar distributions, and nutrition packages to underprivileged daily-wage earners and families in need.",
     location: "Bahawalpur & Sindh",
     venue: "Community Distribution Hubs",
-    time: "Full-day Welfare Drive",
+    time: "Ramadan Food Distribution",
     category: "Welfare",
     image: "/images/events/food-drive.jpg",
     isUpcoming: false,
     registrationOpen: false,
-    badge: "Flagship Welfare Drive",
+    badge: "Ramadan Welfare Campaign",
   },
   {
     id: "event-3",

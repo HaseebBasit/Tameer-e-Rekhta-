@@ -38,7 +38,7 @@ export const corePillars: Pillar[] = [
     id: "serve-humanity",
     title: "Serve Humanity",
     urduTitle: "خدمتِ خلق",
-    description: "Working selflessly for the welfare and betterment of communities in need across Pakistan through ration drives, orphanage care, and relief aid.",
+    description: "Working selflessly for the welfare and betterment of communities in need across Pakistan through community food drives, orphanage care, and relief aid.",
     iconName: "HandHeart",
   },
 ];
@@ -50,11 +50,11 @@ export const initiatives: Initiative[] = [
     category: "food",
     categoryLabel: "Food Distribution",
     description: "Providing meals to those in need and spreading smiles across underprivileged communities.",
-    fullDetails: "Organizing regular cooked meal distributions and dry ration packs for daily-wage laborers, needy families, and street children across urban centers.",
+    fullDetails: "Organizing regular freshly cooked meal distributions for daily-wage laborers, needy families, and street children across urban and community centers.",
     image: "/images/events/food-drive.jpg",
     schedule: "Monthly Drives",
-    location: "Bahawalpur & Sindh",
-    impactMetrics: "1,000+ Warm Meals Served",
+    location: "Bahawalpur & Karachi",
+    impactMetrics: "Community Meal Distribution",
   },
   {
     id: "orphanage-visits",
@@ -66,7 +66,7 @@ export const initiatives: Initiative[] = [
     image: "/images/events/orphanage-visit.jpg",
     schedule: "Bi-Weekly Visits",
     location: "Bahawalpur & Regional Shelters",
-    impactMetrics: "15+ Shelter Home Visits",
+    impactMetrics: "Shelter Home Care & Mentorship",
   },
   {
     id: "youth-leadership",
@@ -76,9 +76,9 @@ export const initiatives: Initiative[] = [
     description: "Organizing events and sessions to develop leadership skills and strong moral character.",
     fullDetails: "Conducting interactive youth bootcamps, debate forums, and leadership seminars that teach collaboration, problem solving, and civic awareness.",
     image: "/images/events/naqsh-e-khiyaal.jpg",
-    schedule: "Quarterly Workshops",
-    location: "Nationwide",
-    impactMetrics: "500+ Youth Trained",
+    schedule: "Quarterly Sessions",
+    location: "Karachi, Bahawalpur & Lahore",
+    impactMetrics: "Youth Leadership & Creative Arts",
   },
   {
     id: "community-welfare",
@@ -90,6 +90,6 @@ export const initiatives: Initiative[] = [
     image: "/images/gallery/flood-relief.jpg",
     schedule: "Ongoing Action",
     location: "Sindh & Punjab",
-    impactMetrics: "Active Volunteer Network",
+    impactMetrics: "Active Community Action",
   },
 ];

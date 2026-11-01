@@ -59,12 +59,12 @@ export const RecentActivities: React.FC = () => {
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-brand-emerald" />
+                  <span className="flex items-center gap-1 font-medium text-gray-600">
+                    <MapPin className="w-3.5 h-3.5 text-brand-emerald shrink-0" />
                     <span>{item.location}</span>
                   </span>
-                  <span className="font-medium text-brand-leaf">
-                    {item.impactMetrics.split(" ")[0]}
+                  <span className="font-semibold text-brand-forest bg-brand-mint/80 border border-brand-emerald/20 px-2.5 py-0.5 rounded-full text-[11px]">
+                    {item.schedule}
                   </span>
                 </div>
               </div>

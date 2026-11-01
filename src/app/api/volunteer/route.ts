@@ -1,5 +1,159 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import fs from "fs";
+import path from "path";
+
+const GOOGLE_SHEET_URL =
+  process.env.GOOGLE_SHEET_URL ||
+  "https://docs.google.com/spreadsheets/d/1yClRjr457V5H5KAIdH_DbbrcrKGshCZdc4bz6sUbffw/edit?gid=0#gid=0";
+
+// Helper to escape CSV values for Excel compatibility
+function escapeCsv(val: any): string {
+  if (val === null || val === undefined) return '""';
+  const str = String(val).replace(/"/g, '""');
+  return `"${str}"`;
+}
+
+// Generate Excel-friendly CSV with UTF-8 BOM
+function generateVolunteerCsv(data: {
+  timestamp: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  instagramId: string;
+  city: string;
+  age: string;
+  areaOfInterest: string;
+  motivation: string;
+}): Buffer {
+  const headers = [
+    "Timestamp",
+    "Full Name",
+    "Email Address",
+    "Phone / WhatsApp",
+    "Instagram ID",
+    "City",
+    "Age",
+    "Area of Interest",
+    "Motivation / Why Join",
+  ];
+
+  const row = [
+    data.timestamp,
+    data.fullName,
+    data.email,
+    data.phone,
+    data.instagramId || "N/A",
+    data.city,
+    data.age || "N/A",
+    data.areaOfInterest,
+    data.motivation || "None provided",
+  ];
+
+  const csvString =
+    headers.map(escapeCsv).join(",") + "\r\n" + row.map(escapeCsv).join(",") + "\r\n";
+
+  // Prepend UTF-8 BOM (0xEF, 0xBB, 0xBF) so Excel properly decodes Urdu and special characters
+  return Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from(csvString, "utf-8")]);
+}
+
+// Local CSV file persistence
+async function appendToLocalCsv(data: {
+  timestamp: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  instagramId: string;
+  city: string;
+  age: string;
+  areaOfInterest: string;
+  motivation: string;
+}) {
+  try {
+    const dir = path.join(process.cwd(), "src", "data");
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const filePath = path.join(dir, "volunteers-log.csv");
+    const row = [
+      data.timestamp,
+      data.fullName,
+      data.email,
+      data.phone,
+      data.instagramId || "N/A",
+      data.city,
+      data.age || "N/A",
+      data.areaOfInterest,
+      data.motivation || "None provided",
+    ]
+      .map(escapeCsv)
+      .join(",") + "\r\n";
+
+    if (!fs.existsSync(filePath)) {
+      const headers = [
+        "Timestamp",
+        "Full Name",
+        "Email Address",
+        "Phone / WhatsApp",
+        "Instagram ID",
+        "City",
+        "Age",
+        "Area of Interest",
+        "Motivation / Why Join",
+      ]
+        .map(escapeCsv)
+        .join(",") + "\r\n";
+
+      const buffer = Buffer.concat([
+        Buffer.from([0xef, 0xbb, 0xbf]),
+        Buffer.from(headers + row, "utf-8"),
+      ]);
+      await fs.promises.writeFile(filePath, buffer);
+    } else {
+      await fs.promises.appendFile(filePath, row, "utf-8");
+    }
+  } catch (err) {
+    console.error("Local CSV append error:", err);
+  }
+}
+
+// Sync directly to Google Sheet Webhook (Google Apps Script Web App)
+async function syncToGoogleSheets(data: {
+  timestamp: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  instagramId: string;
+  city: string;
+  age: string;
+  areaOfInterest: string;
+  motivation: string;
+}) {
+  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+  if (!webhookUrl) return;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+    const res = await fetch(webhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      console.warn("Google Sheets webhook returned non-200 status:", res.status);
+    }
+  } catch (sheetErr) {
+    console.warn("Could not push to Google Sheets webhook:", sheetErr);
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -36,6 +190,30 @@ export async function POST(req: Request) {
 
     const emailSubject = `New Volunteer Registration: ${fullName} (${city}) - Ta'meer-e-Rekhta`;
 
+    const volunteerPayload = {
+      timestamp: submissionDate,
+      fullName,
+      email,
+      phone,
+      instagramId: instagramId || "",
+      city,
+      age: age || "",
+      areaOfInterest,
+      motivation: motivation || "",
+    };
+
+    // 1. Asynchronously log to server CSV backup & trigger Google Sheets sync
+    await appendToLocalCsv(volunteerPayload);
+    // Google Sheets Webhook push in background
+    syncToGoogleSheets(volunteerPayload).catch((err) =>
+      console.warn("Background sheet sync notice:", err)
+    );
+
+    // 2. Generate CSV Buffer to attach to the email
+    const csvBuffer = generateVolunteerCsv(volunteerPayload);
+    const safeApplicantName = fullName.replace(/[^a-zA-Z0-9]/g, "_");
+    const csvFileName = `Volunteer_${safeApplicantName}_${Date.now()}.csv`;
+
     // Plaintext format
     const plainText = `
 ==============================================
@@ -58,10 +236,12 @@ ${motivation || "None provided"}
 SUBMISSION INFO:
 - Date: ${submissionDate}
 - Sent to: ${recipientEmail}
+- Attached: Excel-compatible (.csv) record
+- Master Google Sheet: ${GOOGLE_SHEET_URL}
 ==============================================
     `.trim();
 
-    // Responsive HTML Email Template (Tested for Mobile Gmail, Apple Mail, Outlook)
+    // Responsive HTML Email Template
     const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
@@ -173,6 +353,25 @@ SUBMISSION INFO:
       border-radius: 12px;
       border-left: 4px solid #0D5C3A;
     }
+    .sheet-box {
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .sheet-btn {
+      display: inline-block;
+      background-color: #0D5C3A;
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      margin-top: 8px;
+    }
     .footer {
       padding: 20px;
       text-align: center;
@@ -279,6 +478,19 @@ SUBMISSION INFO:
           </div>
         </div>
 
+        <!-- Attached Excel Spreadsheet & Google Sheet Notice -->
+        <div class="sheet-box">
+          <div style="font-size: 13px; font-weight: 700; color: #166534; margin-bottom: 4px;">
+            📊 Attached Excel Sheet &amp; Google Sheet Link
+          </div>
+          <p style="margin: 0 0 10px 0; font-size: 12px; color: #15803d; line-height: 1.4;">
+            This applicant's record has been attached to this email as an Excel-compatible file (<strong>${csvFileName}</strong>). You can also view and edit the live master records in your Google Sheet:
+          </p>
+          <a href="${GOOGLE_SHEET_URL}" target="_blank" class="sheet-btn">
+            Open Volunteer Google Sheet ↗
+          </a>
+        </div>
+
         <!-- Timestamp -->
         <div style="margin-top: 16px; font-size: 12px; color: #94a3b8; text-align: right;">
           Submitted on ${submissionDate}
@@ -288,7 +500,12 @@ SUBMISSION INFO:
       <!-- Footer -->
       <div class="footer">
         <strong>Ta'meer-e-Rekhta Administration</strong><br>
-        Direct Inquiries: <a href="mailto:${recipientEmail}" style="color: #0D5C3A;">${recipientEmail}</a>
+        Direct Inquiries: <a href="mailto:${recipientEmail}" style="color: #0D5C3A;">${recipientEmail}</a><br>
+        <span style="display: inline-block; margin-top: 4px; font-size: 11px;">
+          <a href="${GOOGLE_SHEET_URL}" target="_blank" style="color: #0D5C3A; text-decoration: underline;">
+            Online Volunteer Database (Google Sheet)
+          </a>
+        </span>
       </div>
     </div>
   </div>
@@ -297,9 +514,7 @@ SUBMISSION INFO:
     `.trim();
 
     // Check if SMTP credentials exist in environment
-    const hasSmtpConfig =
-      process.env.SMTP_USER &&
-      process.env.SMTP_PASS;
+    const hasSmtpConfig = process.env.SMTP_USER && process.env.SMTP_PASS;
 
     if (hasSmtpConfig) {
       const transporter = nodemailer.createTransport({
@@ -319,12 +534,19 @@ SUBMISSION INFO:
         subject: emailSubject,
         text: plainText,
         html: htmlContent,
+        attachments: [
+          {
+            filename: csvFileName,
+            content: csvBuffer,
+            contentType: "text/csv; charset=utf-8",
+          },
+        ],
       });
 
       return NextResponse.json({
         success: true,
         method: "smtp",
-        message: "Volunteer application received and sent successfully via SMTP.",
+        message: "Volunteer application received, email sent with Excel attachment, and database updated.",
       });
     } else {
       const host = req.headers.get("host") || "localhost:3000";
@@ -335,7 +557,7 @@ SUBMISSION INFO:
         req.headers.get("user-agent") ||
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
-      // FormSubmit box template provides a clean responsive vertical stack that never cuts text
+      // FormSubmit fallback delivery
       const formSubmitResponse = await fetch(
         `https://formsubmit.co/ajax/${encodeURIComponent(recipientEmail)}`,
         {
@@ -360,6 +582,7 @@ SUBMISSION INFO:
             "Age": age || "Not specified",
             "Area of Interest": areaOfInterest,
             "Motivation / Why Join": motivation || "None provided",
+            "Master Google Sheet": GOOGLE_SHEET_URL,
             "Submitted At": submissionDate,
           }),
         }

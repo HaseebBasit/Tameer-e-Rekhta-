@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { MapPin, Clock, ArrowRight, Tag } from "lucide-react";
+import { MapPin, Clock, ArrowRight } from "lucide-react";
 import { EventItem } from "@/data/events";
 import { Button } from "@/components/ui/Button";
 
@@ -28,13 +28,21 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
       {/* Middle & Right Content */}
       <div className="p-6 sm:p-7 flex-1 flex flex-col sm:flex-row sm:items-center gap-6 justify-between">
         {/* Date block */}
-        <div className="flex items-center sm:flex-col justify-start sm:justify-center text-center px-4 py-3 bg-brand-mint/60 border border-brand-green/20 rounded-2xl shrink-0 gap-2 sm:gap-0 sm:min-w-[85px]">
-          <span className="font-heading font-black text-2xl sm:text-3xl text-brand-dark leading-none">
-            {event.day}
-          </span>
-          <span className="text-xs font-bold uppercase tracking-wider text-brand-leaf leading-none sm:mt-1">
-            {event.month}
-          </span>
+        <div className="flex items-center sm:flex-col justify-center text-center px-4 py-3 bg-brand-mint/60 border border-brand-green/20 rounded-2xl shrink-0 gap-1 sm:gap-0 sm:min-w-[90px]">
+          {event.day ? (
+            <>
+              <span className="font-heading font-black text-2xl sm:text-3xl text-brand-dark leading-none">
+                {event.day}
+              </span>
+              <span className="text-xs font-bold uppercase tracking-wider text-brand-leaf leading-none sm:mt-1">
+                {event.month}
+              </span>
+            </>
+          ) : (
+            <span className="font-heading font-black text-sm sm:text-base text-brand-forest uppercase tracking-wider py-1 leading-tight">
+              {event.month}
+            </span>
+          )}
         </div>
 
         {/* Details */}

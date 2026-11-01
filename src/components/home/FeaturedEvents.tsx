@@ -18,7 +18,7 @@ export const FeaturedEvents: React.FC = () => {
             </div>
             <SectionHeading
               title="Signature Events & Campaigns"
-              description="Explore landmark Urdu literary festivals, humanitarian ration drives, and compassion outreach campaigns organized by Ta'meer-e-Rekhta."
+              description="Explore landmark Urdu literary festivals, community food drives, and compassion outreach campaigns organized by Ta'meer-e-Rekhta."
               align="left"
               className="mb-0"
             />
