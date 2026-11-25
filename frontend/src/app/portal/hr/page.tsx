@@ -211,7 +211,7 @@ function HRDashboardContent() {
   const [newAccName, setNewAccName] = useState("");
   const [newAccEmail, setNewAccEmail] = useState("");
   const [newAccRole, setNewAccRole] = useState("member");
-  const [newAccDept, setNewAccDept] = useState("Literature");
+  const [newAccDept, setNewAccDept] = useState("");
   const [newAccDesignation, setNewAccDesignation] = useState("member");
   const [newAccPhone, setNewAccPhone] = useState("");
   const [creatingAccount, setCreatingAccount] = useState(false);
@@ -292,7 +292,7 @@ function HRDashboardContent() {
   // Onboarding modal
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [onboardRole, setOnboardRole] = useState("member");
-  const [onboardDept, setOnboardDept] = useState("Literature");
+  const [onboardDept, setOnboardDept] = useState("");
   const [onboardDesignation, setOnboardDesignation] = useState("Volunteer / Contributor");
   const [onboardActivationLink, setOnboardActivationLink] = useState<string | null>(null);
 
@@ -1045,13 +1045,19 @@ function HRDashboardContent() {
               Department Workforce Distribution
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-              {deptDistribution.map((dept) => (
-                <div key={dept.name} className="p-4 rounded-xl bg-slate-50 border border-gray-100 text-center">
-                  <span className="text-2xs font-semibold text-gray-500 uppercase block tracking-wider truncate">{dept.name}</span>
-                  <span className="text-2xl font-extrabold text-brand-dark block mt-1">{dept.count}</span>
-                  <span className="text-2xs text-gray-400">members</span>
+              {deptDistribution.length === 0 ? (
+                <div className="col-span-full py-8 text-center bg-slate-50 rounded-xl border border-dashed border-gray-200">
+                  <p className="text-xs text-gray-500">No departments configured yet.</p>
                 </div>
-              ))}
+              ) : (
+                deptDistribution.map((dept) => (
+                  <div key={dept.name} className="p-4 rounded-xl bg-slate-50 border border-gray-100 text-center">
+                    <span className="text-2xs font-semibold text-gray-500 uppercase block tracking-wider truncate">{dept.name}</span>
+                    <span className="text-2xl font-extrabold text-brand-dark block mt-1">{dept.count}</span>
+                    <span className="text-2xs text-gray-400">members</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -1418,11 +1424,9 @@ function HRDashboardContent() {
                   className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-white text-gray-700"
                 >
                   <option value="all">All Areas</option>
-                  <option value="Literature">Literature</option>
-                  <option value="Media">Media</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Outreach">Outreach</option>
-                  <option value="Content Creation">Content Creation</option>
+                  {deptDistribution.map((d) => (
+                    <option key={d.name} value={d.name}>{d.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -1533,13 +1537,9 @@ function HRDashboardContent() {
                   className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 bg-white text-gray-700"
                 >
                   <option value="all">All Departments</option>
-                  <option value="Literature">Literature</option>
-                  <option value="Media">Media</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Outreach">Outreach</option>
-                  <option value="Content Creation">Content Creation</option>
-                  <option value="HR">HR</option>
-                  <option value="Finance">Finance</option>
+                  {deptDistribution.map((d) => (
+                    <option key={d.name} value={d.name}>{d.name}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -2399,13 +2399,15 @@ function HRDashboardContent() {
                     onChange={(e) => setOnboardDept(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 bg-white"
                   >
-                    <option value="Literature">Literature</option>
-                    <option value="Media">Media</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Outreach">Outreach</option>
-                    <option value="Content Creation">Content Creation</option>
-                    <option value="HR">HR</option>
-                    <option value="Finance">Finance</option>
+                    {deptDistribution.length === 0 ? (
+                      <option value="">No departments configured</option>
+                    ) : (
+                      deptDistribution.map((d) => (
+                        <option key={d.name} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
 
@@ -2806,14 +2808,15 @@ function HRDashboardContent() {
                     onChange={(e) => setNewAccDept(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none bg-white"
                   >
-                    <option value="Literature">Literature</option>
-                    <option value="Media">Media</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Outreach">Outreach</option>
-                    <option value="Content Creation">Content Creation</option>
-                    <option value="HR">HR</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Administration">Administration</option>
+                    {deptDistribution.length === 0 ? (
+                      <option value="">No departments configured</option>
+                    ) : (
+                      deptDistribution.map((d) => (
+                        <option key={d.name} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>

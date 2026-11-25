@@ -193,13 +193,13 @@ function SuperAdminDashboardContent() {
   const [newUserName, setNewUserName] = useState("");
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState("member");
-  const [newUserDept, setNewUserDept] = useState("Literature");
+  const [newUserDept, setNewUserDept] = useState("");
   const [newUserDesignation, setNewUserDesignation] = useState("");
 
   // New task form state
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDesc, setNewTaskDesc] = useState("");
-  const [newTaskDept, setNewTaskDept] = useState("Literature");
+  const [newTaskDept, setNewTaskDept] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState("medium");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
 
@@ -814,55 +814,63 @@ function SuperAdminDashboardContent() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {departments.map((dept) => (
-              <div
-                key={dept.code}
-                className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs hover:border-brand-emerald/40 transition-all"
-              >
-                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-brand-mint/50 text-brand-pitch font-bold text-xs">
-                      {dept.code}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-sm text-brand-pitch">{dept.name}</h3>
-                      <p className="text-2xs text-gray-500">Lead: {dept.leadName}</p>
-                    </div>
-                  </div>
-                  <span className="text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-50 text-green-700">
-                    Active
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 py-4 text-center">
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-xs font-bold text-brand-pitch block">{dept.memberCount}</span>
-                    <span className="text-2xs text-gray-500 block">Members</span>
-                  </div>
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-xs font-bold text-blue-700 block">{dept.activeTasks}</span>
-                    <span className="text-2xs text-gray-500 block">In Progress</span>
-                  </div>
-                  <div className="bg-gray-50 p-2.5 rounded-xl">
-                    <span className="text-xs font-bold text-emerald-700 block">{dept.completedTasks}</span>
-                    <span className="text-2xs text-gray-500 block">Done</span>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      setActiveTab("tasks");
-                      window.history.replaceState(null, "", "/portal/super-admin?tab=tasks");
-                    }}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold text-brand-emerald bg-brand-mint/30 hover:bg-brand-mint/60 transition-colors"
-                  >
-                    View Department Tasks
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+            {departments.length === 0 ? (
+              <div className="col-span-full py-12 text-center bg-gray-50/60 rounded-2xl border border-dashed border-gray-200">
+                <Building2 className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm font-semibold text-gray-600">No departments configured yet.</p>
+                <p className="text-xs text-gray-400 mt-1">Departments will appear here once officially configured.</p>
               </div>
-            ))}
+            ) : (
+              departments.map((dept) => (
+                <div
+                  key={dept.code}
+                  className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs hover:border-brand-emerald/40 transition-all"
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-brand-mint/50 text-brand-pitch font-bold text-xs">
+                        {dept.code}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm text-brand-pitch">{dept.name}</h3>
+                        <p className="text-2xs text-gray-500">Lead: {dept.leadName}</p>
+                      </div>
+                    </div>
+                    <span className="text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-50 text-green-700">
+                      Active
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 py-4 text-center">
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-xs font-bold text-brand-pitch block">{dept.memberCount}</span>
+                      <span className="text-2xs text-gray-500 block">Members</span>
+                    </div>
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-xs font-bold text-blue-700 block">{dept.activeTasks}</span>
+                      <span className="text-2xs text-gray-500 block">In Progress</span>
+                    </div>
+                    <div className="bg-gray-50 p-2.5 rounded-xl">
+                      <span className="text-xs font-bold text-emerald-700 block">{dept.completedTasks}</span>
+                      <span className="text-2xs text-gray-500 block">Done</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={() => {
+                        setActiveTab("tasks");
+                        window.history.replaceState(null, "", "/portal/super-admin?tab=tasks");
+                      }}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold text-brand-emerald bg-brand-mint/30 hover:bg-brand-mint/60 transition-colors"
+                    >
+                      View Department Tasks
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
 
           {/* Recent Audit Activity Snapshot */}
@@ -938,14 +946,9 @@ function SuperAdminDashboardContent() {
                 className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none text-gray-600"
               >
                 <option value="">All Departments</option>
-                <option value="Literature">Literature</option>
-                <option value="Media">Media</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Outreach">Outreach</option>
-                <option value="Content Creation">Content Creation</option>
-                <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
-                <option value="Administration">Administration</option>
+                {departments.map((d) => (
+                  <option key={d.code} value={d.name}>{d.name}</option>
+                ))}
               </select>
 
               <button
@@ -1311,13 +1314,9 @@ function SuperAdminDashboardContent() {
                 className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 focus:outline-none focus:border-[#800F35]"
               >
                 <option value="">All Departments</option>
-                <option value="Literature">Literature</option>
-                <option value="Media">Media</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Outreach">Outreach</option>
-                <option value="Content Creation">Content Creation</option>
-                <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
+                {departments.map((d) => (
+                  <option key={d.code} value={d.name}>{d.name}</option>
+                ))}
               </select>
             </div>
 
@@ -1692,14 +1691,15 @@ function SuperAdminDashboardContent() {
                     onChange={(e) => setNewUserDept(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none"
                   >
-                    <option value="Literature">Literature</option>
-                    <option value="Media">Media</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Outreach">Outreach</option>
-                    <option value="Content Creation">Content Creation</option>
-                    <option value="HR">HR</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Administration">Administration</option>
+                    {departments.length === 0 ? (
+                      <option value="">No departments configured</option>
+                    ) : (
+                      departments.map((d) => (
+                        <option key={d.code} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>
@@ -1774,12 +1774,15 @@ function SuperAdminDashboardContent() {
                     onChange={(e) => setNewTaskDept(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none"
                   >
-                    <option value="Literature">Literature</option>
-                    <option value="Media">Media</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Outreach">Outreach</option>
-                    <option value="Content Creation">Content Creation</option>
-                    <option value="Administration">Administration</option>
+                    {departments.length === 0 ? (
+                      <option value="">No departments configured</option>
+                    ) : (
+                      departments.map((d) => (
+                        <option key={d.code} value={d.name}>
+                          {d.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
 

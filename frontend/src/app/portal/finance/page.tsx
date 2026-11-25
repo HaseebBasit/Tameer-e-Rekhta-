@@ -218,7 +218,7 @@ function FinancePortalContent() {
     description: "",
     amount: "",
     category: "Event Expenses",
-    department: "Literature",
+    department: "",
     receiptUrl: "",
     date: new Date().toISOString().slice(0, 10),
   });
@@ -231,7 +231,7 @@ function FinancePortalContent() {
   const [budgetForm, setBudgetForm] = useState({
     fiscalYear: "2026",
     title: "",
-    department: "Literature",
+    department: "",
     category: "General Operating",
     allocatedAmount: "",
     notes: "",
@@ -341,13 +341,32 @@ function FinancePortalContent() {
     }
   }, [budgetFilterDept]);
 
+  // 5. Fetch Departments List
+  const [departmentsList, setDepartmentsList] = useState<{ name: string; code?: string }[]>([]);
+  const fetchDepartments = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/departments`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.departments)) {
+          setDepartmentsList(data.departments);
+        }
+      }
+    } catch (e: any) {
+      console.warn("Failed to fetch departments list:", e.message);
+    }
+  }, []);
+
   // Initial load
   const loadAll = useCallback(async () => {
     setLoading(true);
     clearNotifications();
-    await Promise.all([fetchOverview(), fetchIncome(), fetchExpenses(), fetchBudgets()]);
+    await Promise.all([fetchOverview(), fetchIncome(), fetchExpenses(), fetchBudgets(), fetchDepartments()]);
     setLoading(false);
-  }, [fetchOverview, fetchIncome, fetchExpenses, fetchBudgets]);
+  }, [fetchOverview, fetchIncome, fetchExpenses, fetchBudgets, fetchDepartments]);
 
   useEffect(() => {
     loadAll();
@@ -1175,9 +1194,9 @@ function FinancePortalContent() {
                 className="px-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-white text-gray-700 outline-none"
               >
                 <option value="">All Departments</option>
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
+                {departmentsList.map((d) => (
+                  <option key={d.code || d.name} value={d.name}>
+                    {d.name}
                   </option>
                 ))}
               </select>
@@ -1348,9 +1367,9 @@ function FinancePortalContent() {
                 className="px-3 py-1.5 text-xs border border-gray-200 rounded-xl bg-white text-gray-700 outline-none"
               >
                 <option value="">All Department Budgets</option>
-                {DEPARTMENTS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
+                {departmentsList.map((d) => (
+                  <option key={d.code || d.name} value={d.name}>
+                    {d.name}
                   </option>
                 ))}
               </select>
@@ -1823,11 +1842,15 @@ function FinancePortalContent() {
                     onChange={(e) => setExpenseForm({ ...expenseForm, department: e.target.value })}
                     className="w-full text-xs p-2.5 border border-gray-200 rounded-xl bg-white outline-none"
                   >
-                    {DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
-                      </option>
-                    ))}
+                    {departmentsList.length === 0 ? (
+                      <option value="">No departments configured</option>
+                    ) : (
+                      departmentsList.map((dept) => (
+                        <option key={dept.code || dept.name} value={dept.name}>
+                          {dept.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
                 <div>
@@ -2040,11 +2063,15 @@ function FinancePortalContent() {
                     onChange={(e) => setBudgetForm({ ...budgetForm, department: e.target.value })}
                     className="w-full text-xs p-2.5 border border-gray-200 rounded-xl bg-white outline-none"
                   >
-                    {DEPARTMENTS.map((dept) => (
-                      <option key={dept} value={dept}>
-                        {dept}
-                      </option>
-                    ))}
+                    {departmentsList.length === 0 ? (
+                      <option value="">No departments configured</option>
+                    ) : (
+                      departmentsList.map((dept) => (
+                        <option key={dept.code || dept.name} value={dept.name}>
+                          {dept.name}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>
