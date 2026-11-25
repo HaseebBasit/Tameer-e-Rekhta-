@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   Utensils,
   HeartHandshake,
@@ -16,6 +19,15 @@ import { Container } from "@/components/ui/Container";
 import { siteConfig } from "@/data/site";
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
+
+  const isPortalDashboard =
+    pathname.startsWith("/portal") &&
+    !["/portal/login", "/portal/forgot-password", "/portal/reset-password", "/portal/activate", "/portal/unauthorized"].includes(pathname);
+
+  if (isPortalDashboard) {
+    return null;
+  }
   const quickLinks = [
     { name: "Home", href: "/" },
     { name: "About Us", href: "/about" },

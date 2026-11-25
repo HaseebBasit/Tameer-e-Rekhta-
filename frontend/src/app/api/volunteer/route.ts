@@ -188,9 +188,11 @@ export async function POST(req: Request) {
       timeStyle: "short",
     });
 
+    const submissionId = `SUB_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const emailSubject = `New Volunteer Registration: ${fullName} (${city}) - Ta'meer-e-Rekhta`;
 
     const volunteerPayload = {
+      submissionId,
       timestamp: submissionDate,
       fullName,
       email,
@@ -208,6 +210,32 @@ export async function POST(req: Request) {
     syncToGoogleSheets(volunteerPayload).catch((err) =>
       console.warn("Background sheet sync notice:", err)
     );
+
+    // Controlled push to backend HR Recruitment Portal
+    let backendForwarded = false;
+    try {
+      const backendApiUrl =
+        process.env.BACKEND_API_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://tmr-backend-6smd.onrender.com/api";
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const backendRes = await fetch(`${backendApiUrl}/volunteer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(volunteerPayload),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      if (backendRes.ok) {
+        backendForwarded = true;
+        console.log(`[Volunteer Sync] Application ${submissionId} successfully ingested into backend HR portal.`);
+      } else {
+        console.warn(`[Volunteer Sync Warning] Backend HR portal responded with status ${backendRes.status}. Application safely preserved in CSV and Google Sheets.`);
+      }
+    } catch (fwdErr: any) {
+      console.warn(`[Volunteer Sync Notice] Backend HR forwarding skipped/offline (${fwdErr?.message || "timeout"}). Application safely preserved in local CSV and Google Sheets.`);
+    }
 
     // 2. Generate CSV Buffer to attach to the email
     const csvBuffer = generateVolunteerCsv(volunteerPayload);
@@ -546,7 +574,9 @@ SUBMISSION INFO:
       return NextResponse.json({
         success: true,
         method: "smtp",
-        message: "Volunteer application received, email sent with Excel attachment, and database updated.",
+        submissionId,
+        hrRegistered: backendForwarded,
+        message: "Volunteer application received and dispatched successfully.",
       });
     } else {
       const host = req.headers.get("host") || "localhost:3000";
@@ -600,6 +630,8 @@ SUBMISSION INFO:
       return NextResponse.json({
         success: true,
         method: "direct",
+        submissionId,
+        hrRegistered: backendForwarded,
         message: "Volunteer application received and dispatched successfully.",
       });
     }

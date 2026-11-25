@@ -26,6 +26,10 @@ export const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
 
+  const isPortalDashboard =
+    pathname.startsWith("/portal") &&
+    !["/portal/login", "/portal/forgot-password", "/portal/reset-password", "/portal/activate", "/portal/unauthorized"].includes(pathname);
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -33,6 +37,10 @@ export const Header: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  if (isPortalDashboard) {
+    return null;
+  }
 
   return (
     <header
@@ -93,6 +101,12 @@ export const Header: React.FC = () => {
 
           {/* Desktop Right CTA */}
           <div className="hidden lg:flex items-center gap-3">
+            <Link
+              href="/portal/login"
+              className="text-xs font-semibold text-gray-700 hover:text-brand-pitch px-3 py-1.5 rounded-full hover:bg-gray-100/80 transition-colors"
+            >
+              Portal Login
+            </Link>
             <Button
               href="/volunteer"
               variant="primary"

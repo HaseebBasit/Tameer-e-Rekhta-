@@ -181,6 +181,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
           >
             Support Our Mission
           </Button>
+
+          <Link
+            href="/portal/login"
+            onClick={onClose}
+            className="w-full flex items-center justify-center py-2.5 text-xs font-semibold text-gray-700 hover:text-brand-pitch border border-gray-200 rounded-xl hover:bg-gray-100/60 transition-colors"
+          >
+            Management Portal Login
+          </Link>
         </div>
       </div>
     </div>,

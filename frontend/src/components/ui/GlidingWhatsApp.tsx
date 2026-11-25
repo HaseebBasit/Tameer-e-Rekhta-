@@ -1,10 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { siteConfig } from "@/data/site";
 
 export const GlidingWhatsApp: React.FC = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/portal")) {
+    return null;
+  }
   // Extract digits for wa.me format (e.g., "923701972002")
   const rawNumber = siteConfig.contact.whatsapp.replace(/[^0-9]/g, "") || "923701972002";
   const defaultMessage = encodeURIComponent(

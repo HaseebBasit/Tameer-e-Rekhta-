@@ -3,6 +3,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { GlidingWhatsApp } from "@/components/ui/GlidingWhatsApp";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const viewport: Viewport = {
   themeColor: "#143022",
@@ -60,10 +61,12 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className="bg-brand-cream text-gray-900 flex flex-col min-h-screen antialiased">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <GlidingWhatsApp />
+        <AuthProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <GlidingWhatsApp />
+        </AuthProvider>
       </body>
     </html>
   );
