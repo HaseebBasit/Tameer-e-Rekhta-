@@ -9,6 +9,79 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_API_URL || 'https://tmr-backend-6smd.onrender.com';
+    return [
+      {
+        source: '/api/auth/:path*',
+        destination: `${backendUrl}/api/auth/:path*`,
+      },
+      {
+        source: '/api/super-admin/:path*',
+        destination: `${backendUrl}/api/super-admin/:path*`,
+      },
+      {
+        source: '/api/hr/:path*',
+        destination: `${backendUrl}/api/hr/:path*`,
+      },
+      {
+        source: '/api/finance/:path*',
+        destination: `${backendUrl}/api/finance/:path*`,
+      },
+      {
+        source: '/api/department/:path*',
+        destination: `${backendUrl}/api/department/:path*`,
+      },
+      {
+        source: '/api/departments/:path*',
+        destination: `${backendUrl}/api/departments/:path*`,
+      },
+      {
+        source: '/api/member/:path*',
+        destination: `${backendUrl}/api/member/:path*`,
+      },
+      {
+        source: '/api/members/:path*',
+        destination: `${backendUrl}/api/members/:path*`,
+      },
+      {
+        source: '/api/tasks/:path*',
+        destination: `${backendUrl}/api/tasks/:path*`,
+      },
+      {
+        source: '/api/assessments/:path*',
+        destination: `${backendUrl}/api/assessments/:path*`,
+      },
+      {
+        source: '/api/notifications/:path*',
+        destination: `${backendUrl}/api/notifications/:path*`,
+      },
+      {
+        source: '/api/announcements/:path*',
+        destination: `${backendUrl}/api/announcements/:path*`,
+      },
+      {
+        source: '/api/recruitment/:path*',
+        destination: `${backendUrl}/api/recruitment/:path*`,
+      },
+      {
+        source: '/api/events/:path*',
+        destination: `${backendUrl}/api/events/:path*`,
+      },
+      {
+        source: '/api/media/:path*',
+        destination: `${backendUrl}/api/media/:path*`,
+      },
+      {
+        source: '/api/gallery/:path*',
+        destination: `${backendUrl}/api/gallery/:path*`,
+      },
+      {
+        source: '/api/health',
+        destination: `${backendUrl}/api/health`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
