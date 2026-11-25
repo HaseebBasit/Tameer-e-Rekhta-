@@ -15,12 +15,23 @@ export type TechnicalRole =
   | "dept_media"
   | "dept_marketing"
   | "dept_outreach"
+  | "dept_oam"
   | "dept_content"
+  | "dept_welfare"
   | "hr"
   | "finance"
   | "member";
 
-export type OperationalDesignation = "head" | "director" | "assistant_director" | "member";
+export type OperationalDesignation =
+  | "head"
+  | "head_of_punjab"
+  | "head_of_sindh"
+  | "director"
+  | "director_graphics"
+  | "assistant_director"
+  | "coordination_incharge"
+  | "member"
+  | "volunteer";
 export type HRDesignation = "hr_head" | "hr_director" | "hr_coordination_incharge" | "hr_member";
 export type Designation = OperationalDesignation | HRDesignation;
 
@@ -29,14 +40,21 @@ export const OPERATIONAL_ROLES: TechnicalRole[] = [
   "dept_media",
   "dept_marketing",
   "dept_outreach",
+  "dept_oam",
   "dept_content",
+  "dept_welfare",
 ];
 
 export const DESIGNATION_LABELS: Record<string, string> = {
   head: "Department Head",
+  head_of_punjab: "Head of Punjab",
+  head_of_sindh: "Head of Sindh",
   director: "Director",
+  director_graphics: "Director (Graphics Designing)",
   assistant_director: "Assistant Director",
+  coordination_incharge: "Co-ordination Incharge",
   member: "Team Member",
+  volunteer: "Volunteer",
   hr_head: "HR Head",
   hr_director: "HR Director",
   hr_coordination_incharge: "HR Coordination In-charge",
@@ -48,10 +66,18 @@ export const DESIGNATION_LABELS: Record<string, string> = {
  */
 export function normalizeDesignation(designation?: string | null): string | null {
   if (!designation) return null;
-  const lower = designation.toLowerCase().trim().replace(/[\s-]+/g, "_");
+  let trimmed = designation.trim();
+  if (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+    trimmed = trimmed.substring(1, trimmed.length - 1).trim();
+  }
+  const lower = trimmed.toLowerCase().replace(/[\s-]+/g, "_");
   if (lower in DESIGNATION_LABELS) return lower;
   if (lower === "none" || lower === "null" || lower === "") return null;
   // Handle common aliases
+  if (lower.includes("punjab")) return "head_of_punjab";
+  if (lower.includes("sindh")) return "head_of_sindh";
+  if (lower.includes("graphic")) return "director_graphics";
+  if (lower.includes("volunteer")) return "volunteer";
   if (lower.includes("head") && lower.includes("hr")) return "hr_head";
   if (lower.includes("director") && lower.includes("hr")) return "hr_director";
   if (lower.includes("coordination") || lower.includes("incharge")) return "hr_coordination_incharge";
@@ -86,18 +112,33 @@ export function isSuperAdmin(user?: PortalUser | null): boolean {
 export function isDepartmentHead(user?: PortalUser | null): boolean {
   if (!user) return false;
   if (user.role === "super_admin") return true;
-  return OPERATIONAL_ROLES.includes(user.role as TechnicalRole) && normalizeDesignation(user.designation) === "head";
+  const currentRole = user.activeRole || user.role;
+  const currentDesig = normalizeDesignation(user.activeDesignation || user.designation);
+  return (
+    OPERATIONAL_ROLES.includes(currentRole as TechnicalRole) &&
+    ["head", "head_of_punjab", "head_of_sindh"].includes(currentDesig || "")
+  );
 }
 
 export function isDepartmentDirector(user?: PortalUser | null): boolean {
   if (!user) return false;
   if (user.role === "super_admin") return true;
-  return OPERATIONAL_ROLES.includes(user.role as TechnicalRole) && normalizeDesignation(user.designation) === "director";
+  const currentRole = user.activeRole || user.role;
+  const currentDesig = normalizeDesignation(user.activeDesignation || user.designation);
+  return (
+    OPERATIONAL_ROLES.includes(currentRole as TechnicalRole) &&
+    ["director", "director_graphics"].includes(currentDesig || "")
+  );
 }
 
 export function isAssistantDirector(user?: PortalUser | null): boolean {
   if (!user) return false;
-  return OPERATIONAL_ROLES.includes(user.role as TechnicalRole) && normalizeDesignation(user.designation) === "assistant_director";
+  const currentRole = user.activeRole || user.role;
+  const currentDesig = normalizeDesignation(user.activeDesignation || user.designation);
+  return (
+    OPERATIONAL_ROLES.includes(currentRole as TechnicalRole) &&
+    currentDesig === "assistant_director"
+  );
 }
 
 export function isDepartmentMember(user?: PortalUser | null): boolean {
@@ -192,11 +233,13 @@ export function canViewConfidentialGrading(user?: PortalUser | null, targetDepar
 export function canApproveTasks(user?: PortalUser | null, targetDepartment?: string): boolean {
   if (!user) return false;
   if (user.role === "super_admin") return true;
-  const desig = normalizeDesignation(user.designation);
-  if (!OPERATIONAL_ROLES.includes(user.role as TechnicalRole)) return false;
-  if (!["head", "director"].includes(desig || "")) return false;
-  if (targetDepartment && user.department) {
-    return targetDepartment.toLowerCase().trim() === user.department.toLowerCase().trim();
+  const currentRole = user.activeRole || user.role;
+  const desig = normalizeDesignation(user.activeDesignation || user.designation);
+  if (!OPERATIONAL_ROLES.includes(currentRole as TechnicalRole)) return false;
+  if (!["head", "head_of_punjab", "head_of_sindh", "director", "director_graphics"].includes(desig || "")) return false;
+  const userDept = user.activeDepartment || user.department;
+  if (targetDepartment && userDept) {
+    return targetDepartment.toLowerCase().trim() === userDept.toLowerCase().trim();
   }
   return true;
 }
@@ -297,11 +340,13 @@ export function canPublishMediaGallery(user?: PortalUser | null): boolean {
 export function canFinalApproveTask(user?: PortalUser | null, originalDepartment?: string): boolean {
   if (!user) return false;
   if (user.role === "super_admin") return true;
-  const desig = normalizeDesignation(user.designation);
-  if (!OPERATIONAL_ROLES.includes(user.role as TechnicalRole)) return false;
-  if (!["head", "director"].includes(desig || "")) return false;
-  if (originalDepartment && user.department) {
-    return originalDepartment.toLowerCase().trim() === user.department.toLowerCase().trim();
+  const currentRole = user.activeRole || user.role;
+  const desig = normalizeDesignation(user.activeDesignation || user.designation);
+  if (!OPERATIONAL_ROLES.includes(currentRole as TechnicalRole)) return false;
+  if (!["head", "head_of_punjab", "head_of_sindh", "director", "director_graphics"].includes(desig || "")) return false;
+  const userDept = user.activeDepartment || user.department;
+  if (originalDepartment && userDept) {
+    return originalDepartment.toLowerCase().trim() === userDept.toLowerCase().trim();
   }
   return true;
 }

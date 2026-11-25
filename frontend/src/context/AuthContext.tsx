@@ -1,8 +1,18 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { API_BASE } from "@/lib/api";
+
+export interface DepartmentMembership {
+  department: string;
+  departmentCode: string;
+  departmentId?: string;
+  role: string;
+  designation?: string | null;
+  region?: "Punjab" | "Sindh" | "National" | null;
+  isPrimary?: boolean;
+}
 
 export interface PortalUser {
   id: string;
@@ -14,13 +24,24 @@ export interface PortalUser {
     | "dept_media"
     | "dept_marketing"
     | "dept_outreach"
+    | "dept_oam"
     | "dept_content"
+    | "dept_welfare"
     | "hr"
     | "finance"
     | "member";
   department?: string | null;
   departmentCode?: string | null;
   designation?: string | null;
+  memberships?: DepartmentMembership[];
+  emailAliases?: string[];
+  city?: string | null;
+  region?: "Punjab" | "Sindh" | "National" | null;
+  activeDepartment?: string | null;
+  activeDepartmentCode?: string | null;
+  activeRole?: string | null;
+  activeDesignation?: string | null;
+  activeRegion?: string | null;
   isPrivilegedHR?: boolean;
   status?: string;
   isTester?: boolean;
@@ -32,6 +53,12 @@ interface AuthContextType {
   user: PortalUser | null;
   loading: boolean;
   error: string | null;
+  activeDepartment: string | null;
+  activeDepartmentCode: string | null;
+  activeRole: string | null;
+  activeDesignation: string | null;
+  memberships: DepartmentMembership[];
+  switchDepartment: (departmentNameOrCode: string) => Promise<{ success: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: PortalUser }>;
   logout: () => Promise<void>;
   clearError: () => void;
@@ -48,7 +75,9 @@ export const getDashboardForRole = (role?: string): string => {
     case "dept_media":
     case "dept_marketing":
     case "dept_outreach":
+    case "dept_oam":
     case "dept_content":
+    case "dept_welfare":
       return "/portal/department";
     case "hr":
       return "/portal/hr";
@@ -102,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Token expired or invalid
           if (typeof window !== "undefined") {
             localStorage.removeItem("rekhta_user");
+            localStorage.removeItem("rekhta_active_dept");
           }
           if (isMounted) {
             setUser(null);
@@ -121,6 +151,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isMounted = false;
     };
   }, []);
+
+  const switchDepartment = useCallback(
+    async (departmentNameOrCode: string): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const res = await fetch(`${API_BASE}/auth/switch-department`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          credentials: "include",
+          body: JSON.stringify({ department: departmentNameOrCode }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          return {
+            success: false,
+            error: data?.error || "Failed to switch department context. Authorization denied.",
+          };
+        }
+
+        if (data.user) {
+          setUser(data.user);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("rekhta_user", JSON.stringify(data.user));
+            localStorage.setItem("rekhta_active_dept", data.activeDepartment || "");
+          }
+        } else {
+          setUser((prev) => {
+            if (!prev) return null;
+            const updated: PortalUser = {
+              ...prev,
+              activeDepartment: data.activeDepartment,
+              activeDepartmentCode: data.activeDepartmentCode,
+              activeRole: data.activeRole,
+              activeDesignation: data.activeDesignation,
+              activeRegion: data.activeRegion,
+            };
+            if (typeof window !== "undefined") {
+              localStorage.setItem("rekhta_user", JSON.stringify(updated));
+              localStorage.setItem("rekhta_active_dept", data.activeDepartment || "");
+            }
+            return updated;
+          });
+        }
+
+        return { success: true };
+      } catch {
+        return { success: false, error: "Network error while switching department." };
+      }
+    },
+    []
+  );
 
   const login = useCallback(
     async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: PortalUser }> => {
@@ -153,11 +237,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Store only user display profile in localStorage (tokens remain in HTTP-only cookies)
         if (typeof window !== "undefined") {
           localStorage.setItem("rekhta_user", JSON.stringify(authenticatedUser));
+          if (authenticatedUser.activeDepartment) {
+            localStorage.setItem("rekhta_active_dept", authenticatedUser.activeDepartment);
+          }
         }
 
         setLoading(false);
         return { success: true, user: authenticatedUser };
-      } catch (err: unknown) {
+      } catch {
         const networkError = "Unable to connect to the authentication server. Please verify the backend is running.";
         setError(networkError);
         setLoading(false);
@@ -179,6 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       if (typeof window !== "undefined") {
         localStorage.removeItem("rekhta_user");
+        localStorage.removeItem("rekhta_active_dept");
       }
       setUser(null);
       router.push("/portal/login");
@@ -188,7 +276,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearError = useCallback(() => setError(null), []);
 
   const getDashboardRoute = useCallback((role?: string) => {
-    return getDashboardForRole(role || user?.role);
+    return getDashboardForRole(role || user?.activeRole || user?.role);
+  }, [user]);
+
+  const memberships = useMemo(() => {
+    return user?.memberships || [];
+  }, [user]);
+
+  const activeDepartment = useMemo(() => {
+    return user?.activeDepartment || user?.department || (user?.memberships?.[0]?.department) || null;
+  }, [user]);
+
+  const activeDepartmentCode = useMemo(() => {
+    return user?.activeDepartmentCode || user?.departmentCode || (user?.memberships?.[0]?.departmentCode) || null;
+  }, [user]);
+
+  const activeRole = useMemo(() => {
+    return user?.activeRole || user?.role || (user?.memberships?.[0]?.role) || null;
+  }, [user]);
+
+  const activeDesignation = useMemo(() => {
+    return user?.activeDesignation || user?.designation || (user?.memberships?.[0]?.designation) || null;
   }, [user]);
 
   return (
@@ -197,6 +305,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         loading,
         error,
+        activeDepartment,
+        activeDepartmentCode,
+        activeRole,
+        activeDesignation,
+        memberships,
+        switchDepartment,
         login,
         logout,
         clearError,

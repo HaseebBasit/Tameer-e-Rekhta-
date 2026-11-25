@@ -67,7 +67,7 @@ interface TaskItem {
 
 function DepartmentDashboardContent() {
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, activeDepartment } = useAuth();
   const activeTabParam = searchParams.get("tab") || "overview";
   const [activeTab, setActiveTab] = useState(activeTabParam);
 
@@ -114,8 +114,8 @@ function DepartmentDashboardContent() {
   const [deptLeaveAction, setDeptLeaveAction] = useState<"approve" | "reject">("approve");
   const [deptLeaveNotes, setDeptLeaveNotes] = useState("");
 
-  // Identify department code or name
-  const departmentName = user?.department || "Literature";
+  // Identify department code or name (supports multi-membership context switching)
+  const departmentName = activeDepartment || user?.department || "Literature";
 
   const fetchDepartmentData = useCallback(async () => {
     try {
@@ -124,7 +124,10 @@ function DepartmentDashboardContent() {
 
       const res = await fetch(`${API_BASE}/department/${encodeURIComponent(departmentName)}/overview`, {
         credentials: "include",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-Department-Context": departmentName,
+        },
       });
 
       if (res.ok) {

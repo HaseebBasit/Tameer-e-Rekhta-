@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getDesignationDisplayName } from "@/lib/authorization";
 import { API_BASE } from "@/lib/api";
+import { DepartmentSwitcher } from "./DepartmentSwitcher";
 import {
   Search,
   Bell,
@@ -279,6 +280,9 @@ export function PortalHeader({ onOpenMobileSidebar }: HeaderProps) {
             {user.department}
           </span>
         )}
+
+        {/* Department Context Switcher for Multi-Department Users */}
+        <DepartmentSwitcher />
 
         {/* Notifications Bell */}
         <div className="relative" ref={notificationContainerRef}>

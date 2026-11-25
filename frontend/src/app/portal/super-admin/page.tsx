@@ -76,6 +76,16 @@ interface PortalUserItem {
   designation?: string;
   status: string;
   isPrivilegedHR?: boolean;
+  activationStatus?: string;
+  activationExpires?: string | null;
+  activationGeneratedAt?: string | null;
+  activationRevokedAt?: string | null;
+  memberships?: Array<{
+    department: string;
+    departmentCode?: string;
+    role: string;
+    designation?: string;
+  }>;
 }
 
 interface AssessmentItem {
@@ -195,6 +205,21 @@ function SuperAdminDashboardContent() {
   const [newUserRole, setNewUserRole] = useState("member");
   const [newUserDept, setNewUserDept] = useState("");
   const [newUserDesignation, setNewUserDesignation] = useState("");
+
+  // Phase 10B: Activation link management state
+  const [userSubView, setUserSubView] = useState<"all" | "activation">("all");
+  const [bulkActivations, setBulkActivations] = useState<Array<{
+    userId: string;
+    name: string;
+    email: string;
+    department: string;
+    role: string;
+    designation?: string;
+    activationUrl: string;
+    expiresAt: string;
+  }> | null>(null);
+  const [bulkGenerating, setBulkGenerating] = useState(false);
+  const [copiedBulkId, setCopiedBulkId] = useState<string | null>(null);
 
   // New task form state
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -480,6 +505,58 @@ function SuperAdminDashboardContent() {
     }
   };
 
+  const handleRevokeActivation = async (userId: string, userName: string) => {
+    if (!confirm(`Are you sure you want to revoke the active activation link for ${userName}? The existing link will immediately stop working.`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/super-admin/users/${userId}/revoke-activation`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setActionSuccess(`Activation link revoked for ${userName}.`);
+        fetchUsers();
+        setTimeout(() => setActionSuccess(null), 4000);
+      } else {
+        alert(data.error || "Failed to revoke activation link.");
+      }
+    } catch {
+      alert("Network error while revoking activation link.");
+    }
+  };
+
+  const handleBulkGenerateActivations = async () => {
+    setBulkGenerating(true);
+    try {
+      const res = await fetch(`${API_BASE}/super-admin/users/bulk-generate-activations`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
+      const data = await res.json();
+      setBulkGenerating(false);
+      if (res.ok && data.success) {
+        setBulkActivations(data.links || []);
+        fetchUsers();
+        setActionSuccess(`Generated ${data.count} single-use activation links! You can copy them individually below.`);
+      } else {
+        alert(data.error || "Failed to bulk generate activation links.");
+      }
+    } catch {
+      setBulkGenerating(false);
+      alert("Network error during bulk activation link generation.");
+    }
+  };
+
+  const copyIndividualBulkLink = (userId: string, url: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopiedBulkId(userId);
+      setTimeout(() => setCopiedBulkId(null), 2500);
+    }
+  };
+
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -701,11 +778,11 @@ function SuperAdminDashboardContent() {
             </div>
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-[#17243A]">5 Divisions</span>
-            <span className="text-xs text-emerald-600 font-semibold">Active</span>
+            <span className="text-2xl font-bold text-[#17243A]">{departments.length > 0 ? `${departments.length} Departments` : "6 Departments"}</span>
+            <span className="text-xs text-emerald-600 font-semibold">Configured</span>
           </div>
           <p className="text-[11px] text-slate-400 mt-1">
-            Literature, Media, Marketing, Outreach, Content
+            {departments.length > 0 ? departments.map((d) => d.name).join(", ") : "Literature, Content Creation, Outreach & Marketing, Media, HR, Welfare"}
           </p>
         </div>
       </div>
@@ -911,141 +988,321 @@ function SuperAdminDashboardContent() {
               <p className="text-xs text-gray-500">Manage user accounts, privileges, designations, and account activation</p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
-                <input
-                  type="text"
-                  placeholder="Search by name or email..."
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-emerald w-48"
-                />
-              </div>
-
-              <select
-                value={userRoleFilter}
-                onChange={(e) => setUserRoleFilter(e.target.value)}
-                className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none text-gray-600"
-              >
-                <option value="">All Roles</option>
-                <option value="super_admin">Super Admin</option>
-                <option value="dept_literature">Dept Literature</option>
-                <option value="dept_media">Dept Media</option>
-                <option value="dept_marketing">Dept Marketing</option>
-                <option value="dept_outreach">Dept Outreach</option>
-                <option value="dept_content">Dept Content</option>
-                <option value="hr">HR</option>
-                <option value="finance">Finance</option>
-                <option value="member">Member</option>
-              </select>
-
-              <select
-                value={userDeptFilter}
-                onChange={(e) => setUserDeptFilter(e.target.value)}
-                className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none text-gray-600"
-              >
-                <option value="">All Departments</option>
-                {departments.map((d) => (
-                  <option key={d.code} value={d.name}>{d.name}</option>
-                ))}
-              </select>
-
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowCreateUserModal(true)}
-                className="px-3 py-1.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold hover:bg-brand-pitch transition-colors flex items-center gap-1.5 shadow-2xs"
+                type="button"
+                onClick={() => setUserSubView("all")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                  userSubView === "all"
+                    ? "bg-brand-pitch text-white shadow-xs"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                Add Member
+                All Accounts ({usersList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserSubView("activation")}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
+                  userSubView === "activation"
+                    ? "bg-[#800F35] text-white shadow-xs"
+                    : "bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100"
+                }`}
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                Activation Dashboard ({usersList.filter((u) => u.status === "inactive" || u.activationStatus === "pending").length})
               </button>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-gray-50/75 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
-                <tr>
-                  <th className="py-3 px-4">User</th>
-                  <th className="py-3 px-4">Role</th>
-                  <th className="py-3 px-4">Department & Designation</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-gray-400">
-                      No users match the search filters.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredUsers.map((u) => (
-                    <tr key={u.id || u._id} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-gray-900">{u.name}</div>
-                        <div className="text-2xs text-gray-400 font-mono">{u.email}</div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className="px-2 py-0.5 rounded-full text-2xs font-semibold bg-gray-100 text-gray-800">
-                          {u.role}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        <div>{u.department || "General"}</div>
-                        {u.designation && (
-                          <div className="text-2xs text-brand-emerald font-medium capitalize">
-                            {u.designation.replace(/_/g, " ")}
-                          </div>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-2xs font-semibold uppercase ${
-                            u.status === "active"
-                              ? "bg-green-100 text-green-800"
-                              : u.status === "pending" || u.status === "inactive"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {u.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-right space-x-2">
-                        {/* Super Admin accounts are immutable to activation regeneration or suspension */}
-                        {u.role !== "super_admin" && (
-                          <>
-                            {/* Regenerate Activation Link */}
-                            <button
-                              type="button"
-                              onClick={() => handleRegenerateActivation(u.id || u._id || "", u.name, u.email)}
-                              title="Generate new activation link"
-                              className="px-2 py-1 text-2xs font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 inline-flex items-center gap-1 transition"
-                            >
-                              <KeyRound className="w-3 h-3 text-[#800F35]" />
-                              Link
-                            </button>
+          {userSubView === "all" ? (
+            <>
+              <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-2.5" />
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-emerald w-56 bg-white"
+                  />
+                </div>
 
-                            <button
-                              onClick={() => handleToggleUserStatus(u.id || u._id || "", u.status)}
-                              className={`px-2.5 py-1 text-2xs font-semibold rounded-lg transition-colors ${
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={userRoleFilter}
+                    onChange={(e) => setUserRoleFilter(e.target.value)}
+                    className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none text-gray-600 bg-white"
+                  >
+                    <option value="">All Roles</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="dept_literature">Dept Literature</option>
+                    <option value="dept_media">Dept Media</option>
+                    <option value="dept_marketing">Dept Marketing</option>
+                    <option value="dept_outreach">Dept Outreach</option>
+                    <option value="dept_oam">Dept Outreach & Marketing</option>
+                    <option value="dept_content">Dept Content</option>
+                    <option value="dept_welfare">Dept Welfare</option>
+                    <option value="hr">HR</option>
+                    <option value="finance">Finance</option>
+                    <option value="member">Member</option>
+                  </select>
+
+                  <select
+                    value={userDeptFilter}
+                    onChange={(e) => setUserDeptFilter(e.target.value)}
+                    className="px-3 py-1.5 text-xs rounded-xl border border-gray-200 focus:outline-none text-gray-600 bg-white"
+                  >
+                    <option value="">All Departments</option>
+                    {departments.map((d) => (
+                      <option key={d.code} value={d.name}>{d.name}</option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => setShowCreateUserModal(true)}
+                    className="px-3 py-1.5 rounded-xl bg-brand-emerald text-white text-xs font-semibold hover:bg-brand-pitch transition-colors flex items-center gap-1.5 shadow-2xs"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Member
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-gray-50/75 border-b border-gray-100 text-gray-500 uppercase tracking-wider font-semibold">
+                    <tr>
+                      <th className="py-3 px-4">User</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4">Department & Designation</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-gray-400">
+                          No users match the search filters.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredUsers.map((u) => (
+                        <tr key={u.id || u._id} className="hover:bg-gray-50/60 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="font-semibold text-gray-900">{u.name}</div>
+                            <div className="text-2xs text-gray-400 font-mono">{u.email}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded-full text-2xs font-semibold bg-gray-100 text-gray-800">
+                              {u.role}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-gray-600">
+                            <div>{u.department || "General"}</div>
+                            {u.designation && (
+                              <div className="text-2xs text-brand-emerald font-medium capitalize">
+                                {u.designation.replace(/_/g, " ")}
+                              </div>
+                            )}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-2xs font-semibold uppercase ${
                                 u.status === "active"
-                                  ? "bg-red-50 text-red-600 hover:bg-red-100"
-                                  : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                  ? "bg-green-100 text-green-800"
+                                  : u.status === "pending" || u.status === "inactive"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-red-100 text-red-800"
                               }`}
                             >
-                              {u.status === "active" ? "Suspend" : "Activate"}
-                            </button>
-                          </>
-                        )}
-                      </td>
+                              {u.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right space-x-2">
+                            {/* Super Admin accounts are immutable to activation regeneration or suspension */}
+                            {u.role !== "super_admin" && (
+                              <>
+                                {/* Regenerate Activation Link */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRegenerateActivation(u.id || u._id || "", u.name, u.email)}
+                                  title="Generate new activation link"
+                                  className="px-2 py-1 text-2xs font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 inline-flex items-center gap-1 transition"
+                                >
+                                  <KeyRound className="w-3 h-3 text-[#800F35]" />
+                                  Link
+                                </button>
+
+                                <button
+                                  onClick={() => handleToggleUserStatus(u.id || u._id || "", u.status)}
+                                  className={`px-2.5 py-1 text-2xs font-semibold rounded-lg transition-colors ${
+                                    u.status === "active"
+                                      ? "bg-red-50 text-red-600 hover:bg-red-100"
+                                      : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                                  }`}
+                                >
+                                  {u.status === "active" ? "Suspend" : "Activate"}
+                                </button>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div className="p-5 space-y-5">
+              {/* Stats Bar */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                  <div className="text-2xs text-gray-500 font-medium">Inactive Accounts</div>
+                  <div className="text-lg font-bold text-gray-900 mt-0.5">
+                    {usersList.filter((u) => u.status === "inactive").length}
+                  </div>
+                </div>
+                <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100">
+                  <div className="text-2xs text-amber-800 font-medium">Pending Activation</div>
+                  <div className="text-lg font-bold text-amber-900 mt-0.5">
+                    {usersList.filter((u) => u.activationStatus === "pending").length}
+                  </div>
+                </div>
+                <div className="p-3 bg-red-50/60 rounded-xl border border-red-100">
+                  <div className="text-2xs text-red-800 font-medium">Expired Links</div>
+                  <div className="text-lg font-bold text-red-900 mt-0.5">
+                    {usersList.filter((u) => u.activationStatus === "expired").length}
+                  </div>
+                </div>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  <div className="text-2xs text-slate-600 font-medium">Revoked Links</div>
+                  <div className="text-lg font-bold text-slate-800 mt-0.5">
+                    {usersList.filter((u) => u.activationStatus === "revoked").length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Toolbar */}
+              <div className="p-3.5 bg-gradient-to-r from-amber-50 to-orange-50/40 rounded-xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-[#800F35]" />
+                    Manual Link Distribution Policy
+                  </h3>
+                  <p className="text-2xs text-amber-800 mt-0.5">
+                    Automatic email and SMS delivery is strictly disabled. The Super Admin manually copies and distributes each link.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleBulkGenerateActivations}
+                  disabled={bulkGenerating}
+                  className="px-3.5 py-2 bg-[#800F35] hover:bg-[#6A0C2B] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${bulkGenerating ? "animate-spin" : ""}`} />
+                  {bulkGenerating ? "Generating Links..." : "Bulk Generate Activation Links"}
+                </button>
+              </div>
+
+              {/* Activation Table */}
+              <div className="border border-gray-200 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-gray-50/80 border-b border-gray-200 text-gray-500 uppercase tracking-wider font-semibold">
+                    <tr>
+                      <th className="py-2.5 px-3.5">Account</th>
+                      <th className="py-2.5 px-3.5">Department & Designations</th>
+                      <th className="py-2.5 px-3.5">Link Status</th>
+                      <th className="py-2.5 px-3.5">Generated</th>
+                      <th className="py-2.5 px-3.5">Expires</th>
+                      <th className="py-2.5 px-3.5 text-right">Actions</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {usersList.filter((u) => u.role !== "super_admin" && (u.status === "inactive" || u.activationStatus === "pending")).length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-gray-400">
+                          All organizational accounts are active. No pending activations.
+                        </td>
+                      </tr>
+                    ) : (
+                      usersList
+                        .filter((u) => u.role !== "super_admin" && (u.status === "inactive" || u.activationStatus === "pending"))
+                        .map((u) => (
+                          <tr key={u.id || u._id} className="hover:bg-gray-50/60 transition-colors">
+                            <td className="py-3 px-3.5">
+                              <div className="font-semibold text-gray-900">{u.name}</div>
+                              <div className="text-2xs text-gray-500 font-mono">{u.email}</div>
+                            </td>
+                            <td className="py-3 px-3.5 text-gray-600">
+                              <div className="font-medium text-gray-800">{u.department || "General"}</div>
+                              {u.designation && (
+                                <div className="text-2xs text-brand-emerald capitalize">
+                                  {u.designation.replace(/_/g, " ")}
+                                </div>
+                              )}
+                              {u.memberships && u.memberships.length > 0 && (
+                                <div className="text-2xs text-gray-400 mt-0.5">
+                                  +{u.memberships.length} additional membership(s)
+                                </div>
+                              )}
+                            </td>
+                            <td className="py-3 px-3.5">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-2xs font-semibold uppercase ${
+                                  u.activationStatus === "pending"
+                                    ? "bg-amber-100 text-amber-800 border border-amber-200"
+                                    : u.activationStatus === "expired"
+                                    ? "bg-red-100 text-red-800 border border-red-200"
+                                    : u.activationStatus === "revoked"
+                                    ? "bg-slate-100 text-slate-700 border border-slate-200"
+                                    : "bg-gray-100 text-gray-600"
+                                }`}
+                              >
+                                {u.activationStatus || "None"}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3.5 text-2xs text-gray-500">
+                              {u.activationGeneratedAt
+                                ? new Date(u.activationGeneratedAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                                : "—"}
+                            </td>
+                            <td className="py-3 px-3.5 text-2xs text-gray-500">
+                              {u.activationExpires
+                                ? new Date(u.activationExpires).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                                : "—"}
+                            </td>
+                            <td className="py-3 px-3.5 text-right space-x-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleRegenerateActivation(u.id || u._id || "", u.name, u.email)}
+                                className="px-2.5 py-1 text-2xs font-semibold rounded-lg bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition inline-flex items-center gap-1"
+                              >
+                                <RefreshCw className="w-3 h-3 text-[#800F35]" />
+                                Regenerate
+                              </button>
+                              {u.activationStatus === "pending" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRevokeActivation(u.id || u._id || "", u.name)}
+                                  className="px-2.5 py-1 text-2xs font-semibold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition inline-flex items-center gap-1"
+                                >
+                                  <XCircle className="w-3 h-3" />
+                                  Revoke
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1677,7 +1934,9 @@ function SuperAdminDashboardContent() {
                     <option value="dept_media">Dept Media</option>
                     <option value="dept_marketing">Dept Marketing</option>
                     <option value="dept_outreach">Dept Outreach</option>
+                    <option value="dept_oam">Dept Outreach & Marketing</option>
                     <option value="dept_content">Dept Content</option>
+                    <option value="dept_welfare">Dept Welfare</option>
                     <option value="hr">HR</option>
                     <option value="finance">Finance</option>
                     <option value="super_admin">Super Admin</option>
@@ -1921,6 +2180,105 @@ function SuperAdminDashboardContent() {
                 className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl transition"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* BULK ACTIVATION LINKS MODAL */}
+      {bulkActivations && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-gray-100 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-amber-50 rounded-xl text-[#800F35]">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900">
+                    Bulk Generated Activation Links ({bulkActivations.length})
+                  </h3>
+                  <p className="text-2xs text-gray-500">
+                    Single-use links generated. Copy each link individually to share manually.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBulkActivations(null)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Warning Box */}
+            <div className="p-3 my-3 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-900 text-2xs flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <p className="font-bold">Zero Automatic Communication Guarantee</p>
+                <p className="mt-0.5 text-amber-800">
+                  No automated emails, SMS, or OTPs have been sent. These raw links are displayed exclusively in this session.
+                  Once you close this window, raw tokens are never displayed again in plaintext.
+                </p>
+              </div>
+            </div>
+
+            {/* Links Table */}
+            <div className="flex-1 overflow-y-auto border border-gray-200 rounded-xl">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-semibold sticky top-0">
+                  <tr>
+                    <th className="py-2.5 px-3">Recipient</th>
+                    <th className="py-2.5 px-3">Department</th>
+                    <th className="py-2.5 px-3">Expires</th>
+                    <th className="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {bulkActivations.map((item) => (
+                    <tr key={item.userId} className="hover:bg-gray-50/70">
+                      <td className="py-2.5 px-3">
+                        <div className="font-semibold text-gray-900">{item.name}</div>
+                        <div className="text-2xs text-gray-400 font-mono">{item.email}</div>
+                      </td>
+                      <td className="py-2.5 px-3 text-gray-600">
+                        <div>{item.department || "General"}</div>
+                        {item.designation && (
+                          <div className="text-2xs text-brand-emerald capitalize">{item.designation.replace(/_/g, " ")}</div>
+                        )}
+                      </td>
+                      <td className="py-2.5 px-3 text-2xs text-gray-500">
+                        {new Date(item.expiresAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                      </td>
+                      <td className="py-2.5 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => copyIndividualBulkLink(item.userId, item.activationUrl)}
+                          className={`px-3 py-1 rounded-lg text-2xs font-bold transition flex items-center gap-1 ml-auto shadow-2xs ${
+                            copiedBulkId === item.userId
+                              ? "bg-emerald-600 text-white"
+                              : "bg-[#800F35] hover:bg-[#6A0C2B] text-white"
+                          }`}
+                        >
+                          <Copy className="w-3 h-3" />
+                          {copiedBulkId === item.userId ? "Copied!" : "Copy Link"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="pt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setBulkActivations(null)}
+                className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl transition"
+              >
+                Done
               </button>
             </div>
           </div>
