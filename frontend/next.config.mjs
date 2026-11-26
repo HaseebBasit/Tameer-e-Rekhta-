@@ -29,6 +29,10 @@ const nextConfig = {
         destination: `${backendUrl}/api/finance/:path*`,
       },
       {
+        source: '/api/developer/:path*',
+        destination: `${backendUrl}/api/developer/:path*`,
+      },
+      {
         source: '/api/department/:path*',
         destination: `${backendUrl}/api/department/:path*`,
       },

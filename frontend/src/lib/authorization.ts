@@ -20,6 +20,7 @@ export type TechnicalRole =
   | "dept_welfare"
   | "hr"
   | "finance"
+  | "developer"
   | "member";
 
 export type OperationalDesignation =

@@ -29,6 +29,7 @@ export interface PortalUser {
     | "dept_welfare"
     | "hr"
     | "finance"
+    | "developer"
     | "member";
   department?: string | null;
   departmentCode?: string | null;
@@ -83,6 +84,8 @@ export const getDashboardForRole = (role?: string): string => {
       return "/portal/hr";
     case "finance":
       return "/portal/finance";
+    case "developer":
+      return "/portal/super-admin";
     case "member":
       return "/portal/member";
     default:
