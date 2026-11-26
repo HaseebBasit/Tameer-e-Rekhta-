@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { PortalSidebar } from "@/components/portal/PortalSidebar";
 import { PortalHeader } from "@/components/portal/PortalHeader";
+import { EmergencyAccessBanner } from "@/components/portal/EmergencyAccessBanner";
 
 const PUBLIC_PORTAL_ROUTES = [
   "/portal/login",
@@ -61,6 +62,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {/* Main Content Area with Header and Scrollable Content */}
       <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
+        <EmergencyAccessBanner />
         <PortalHeader onOpenMobileSidebar={() => setMobileSidebarOpen(true)} />
         <main className="flex-1 p-3 sm:p-5 md:p-6 lg:p-8 overflow-y-auto overflow-x-hidden min-h-0">
           {children}

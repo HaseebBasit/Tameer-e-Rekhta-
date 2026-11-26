@@ -48,6 +48,16 @@ export interface PortalUser {
   isTester?: boolean;
   isModerator?: boolean;
   capabilities?: string[];
+  isEmergencyAccess?: boolean;
+  emergencySession?: {
+    operatorId: string;
+    operatorName?: string;
+    operatorEmail?: string;
+    keyId?: string;
+    reason: string;
+    initiatedAt?: string;
+    expiresAt: number;
+  };
 }
 
 export interface LoginResult {
@@ -69,6 +79,17 @@ interface AuthContextType {
   activeRole: string | null;
   activeDesignation: string | null;
   memberships: DepartmentMembership[];
+  isEmergencyAccess: boolean;
+  emergencySession: {
+    operatorId: string;
+    operatorName?: string;
+    operatorEmail?: string;
+    keyId?: string;
+    reason: string;
+    initiatedAt?: string;
+    expiresAt: number;
+  } | null;
+  endEmergencyAccess: () => Promise<void>;
   switchDepartment: (departmentNameOrCode: string) => Promise<{ success: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<LoginResult>;
   verifyMfa: (mfaToken: string, code?: string, recoveryCode?: string) => Promise<LoginResult>;
@@ -498,6 +519,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return user?.activeDesignation || user?.designation || (user?.memberships?.[0]?.designation) || null;
   }, [user]);
 
+  const isEmergencyAccess = Boolean(user?.isEmergencyAccess);
+  const emergencySession = user?.emergencySession || null;
+
+  const endEmergencyAccess = useCallback(async () => {
+    const baseUrl = getApiBaseUrl();
+    try {
+      await fetch(`${baseUrl}/emergency/end-session`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        credentials: "include",
+      });
+    } catch {}
+
+    clearSessionToken();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("rekhta_user");
+      localStorage.removeItem("rekhta_active_dept");
+      document.cookie = "rekhta_emergency_mode=; path=/; max-age=0";
+    }
+    setUser(null);
+    router.push("/emergency-access");
+  }, [router]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -509,6 +553,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         activeRole,
         activeDesignation,
         memberships,
+        isEmergencyAccess,
+        emergencySession,
+        endEmergencyAccess,
         switchDepartment,
         login,
         verifyMfa,
