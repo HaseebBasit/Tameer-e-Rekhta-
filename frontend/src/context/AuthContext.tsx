@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { API_BASE, fetchWithAuth, setSessionToken, clearSessionToken } from "@/lib/api";
+import { API_BASE, getApiBaseUrl, fetchWithAuth, setSessionToken, clearSessionToken } from "@/lib/api";
 
 export interface DepartmentMembership {
   department: string;
@@ -165,11 +165,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           body: JSON.stringify({ department: departmentNameOrCode }),
         });
 
-        const data = await res.json();
-        if (!res.ok || !data.success) {
+        let data: any = null;
+        try {
+          const text = await res.text();
+          data = text ? JSON.parse(text) : null;
+        } catch {}
+
+        if (!res.ok || !data?.success) {
           return {
             success: false,
-            error: data?.error || "Failed to switch department context. Authorization denied.",
+            error: data?.error || (res.status === 403 ? "Department context switch unauthorized." : "Failed to switch department context."),
           };
         }
 
@@ -215,49 +220,97 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(null);
       setLoading(true);
 
+      const baseUrl = getApiBaseUrl();
+      let res: Response;
+
       try {
-        const res = await fetch(`${API_BASE}/auth/login`, {
+        res = await fetch(`${baseUrl}/auth/login`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "X-Requested-With": "XMLHttpRequest",
           },
           credentials: "include",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
         });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          const errMsg = data?.error || "Login failed. Please check your credentials.";
-          setError(errMsg);
-          setLoading(false);
-          return { success: false, error: errMsg };
-        }
-
-        const authenticatedUser = data.user as PortalUser;
-        setUser(authenticatedUser);
-
-        if (data.token) {
-          setSessionToken(data.token);
-        }
-
-        // Store user display profile in localStorage (session token kept strictly in-memory)
-        if (typeof window !== "undefined") {
-          localStorage.setItem("rekhta_user", JSON.stringify(authenticatedUser));
-          if (authenticatedUser.activeDepartment) {
-            localStorage.setItem("rekhta_active_dept", authenticatedUser.activeDepartment);
-          }
-        }
-
-        setLoading(false);
-        return { success: true, user: authenticatedUser };
       } catch {
-        const networkError = "Unable to connect to the authentication server. Please verify the backend is running.";
+        // True network failure / unreachable backend
+        const networkError = "Unable to connect to the authentication server. Please verify the backend is running and your connection is active.";
         setError(networkError);
         setLoading(false);
         return { success: false, error: networkError };
       }
+
+      // Safe JSON / text extraction (never throw SyntaxError on non-JSON gateway responses)
+      let data: any = null;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
+
+      // Accurate HTTP status error classification (Phase 10J Section 2)
+      if (!res.ok || !data?.success) {
+        let errMsg: string;
+
+        if (res.status === 401) {
+          // HTTP 401 during login: invalid credentials or appropriate authentication rejection
+          errMsg = data?.error || "Invalid credentials. Please verify your email and password.";
+        } else if (res.status === 403) {
+          // HTTP 403: permission, suspended account, or CSRF rejection with accurate explanation
+          errMsg = data?.error || "Access forbidden. Your account may be suspended or lacks required permissions.";
+        } else if (res.status === 429) {
+          // HTTP 429: rate limit message
+          errMsg = data?.error || "Too many login attempts from this IP address. Please try again after 15 minutes.";
+        } else if (res.status >= 500 && res.status < 600) {
+          // HTTP 5xx: server-side error
+          errMsg = data?.error || `Authentication server error (HTTP ${res.status}). Please try again in a moment.`;
+        } else if (data?.error) {
+          errMsg = data.error;
+        } else {
+          // Unexpected response: generic authentication error
+          errMsg = `Authentication error (HTTP ${res.status}). Please check your credentials and try again.`;
+        }
+
+        setError(errMsg);
+        setLoading(false);
+        return { success: false, error: errMsg };
+      }
+
+      // Handle MFA requirement (TOTP verification pending)
+      if (data.requireMfa) {
+        const mfaMsg = data.message || "Two-factor authentication code required. Please complete verification.";
+        setError(mfaMsg);
+        setLoading(false);
+        return { success: false, error: mfaMsg };
+      }
+
+      // Handle forced password change on initial login
+      if (data.requirePasswordChange) {
+        const pwdMsg = data.message || "Password change is required on initial login before access is granted.";
+        setError(pwdMsg);
+        setLoading(false);
+        return { success: false, error: pwdMsg };
+      }
+
+      const authenticatedUser = data.user as PortalUser;
+      setUser(authenticatedUser);
+
+      if (data.token) {
+        setSessionToken(data.token);
+      }
+
+      // Store user display profile in localStorage (session token kept strictly in-memory)
+      if (typeof window !== "undefined") {
+        localStorage.setItem("rekhta_user", JSON.stringify(authenticatedUser));
+        if (authenticatedUser.activeDepartment) {
+          localStorage.setItem("rekhta_active_dept", authenticatedUser.activeDepartment);
+        }
+      }
+
+      setLoading(false);
+      return { success: true, user: authenticatedUser };
     },
     []
   );

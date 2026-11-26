@@ -57,13 +57,13 @@ export const Header: React.FC = () => {
             href="/"
             className="group flex items-center gap-3 transition-transform duration-200 hover:scale-[1.01]"
           >
-            <div className="relative w-11 h-11 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-xs group-hover:border-brand-emerald transition-colors">
+            <div className="w-11 h-11 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-xs group-hover:border-brand-emerald transition-colors">
               <Image
                 src="/images/logo-mark.png"
                 alt="Ta'meer-e-Rekhta Official Logo"
-                fill
+                width={44}
+                height={44}
                 className="object-contain p-1"
-                priority
               />
             </div>
             <div className="flex flex-col">

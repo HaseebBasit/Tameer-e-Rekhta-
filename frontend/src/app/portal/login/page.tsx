@@ -55,13 +55,13 @@ export default function PortalLoginPage() {
         {/* Brand Header */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="relative w-14 h-14 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1.5 shadow-sm group-hover:border-brand-emerald transition-colors">
+            <div className="w-14 h-14 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1.5 shadow-sm group-hover:border-brand-emerald transition-colors">
               <Image
                 src="/images/logo-mark.png"
                 alt="Ta'meer-e-Rekhta Logo"
-                fill
+                width={56}
+                height={56}
                 className="object-contain p-1"
-                priority
               />
             </div>
             <div className="text-left">

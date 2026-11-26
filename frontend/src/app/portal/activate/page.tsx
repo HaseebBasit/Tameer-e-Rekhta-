@@ -103,20 +103,32 @@ function ActivateAccountForm() {
         body: JSON.stringify({ token: cleanToken, password }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : null;
+      } catch {}
+
       setSubmitting(false);
 
-      if (res.ok && data.success) {
+      if (res.ok && data?.success) {
         setSuccess(true);
         setTimeout(() => {
           router.push("/portal/login");
         }, 2500);
       } else {
-        setError(data.error || "Failed to activate account. The invitation link may have expired or already been used.");
+        let msg = data?.error;
+        if (!msg) {
+          if (res.status === 400) msg = "Invalid or expired activation link. Please request a new token.";
+          else if (res.status === 403) msg = "Account is suspended or cannot be activated. Please contact Super Admin.";
+          else if (res.status >= 500) msg = `Activation service error (HTTP ${res.status}). Please try again shortly.`;
+          else msg = "Failed to activate account. The invitation link may have expired or already been used.";
+        }
+        setError(msg);
       }
     } catch {
       setSubmitting(false);
-      setError("Unable to connect to the authentication server. Please try again.");
+      setError("Unable to connect to the authentication server. Please check your network connection.");
     }
   };
 
@@ -125,13 +137,13 @@ function ActivateAccountForm() {
       <div className="max-w-md w-full space-y-6 bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-2xl shadow-xl border border-gray-100">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-sm">
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-sm">
               <Image
                 src="/images/logo-mark.png"
                 alt="Ta'meer-e-Rekhta Logo"
-                fill
+                width={48}
+                height={48}
                 className="object-contain p-1"
-                priority
               />
             </div>
             <div className="text-left">

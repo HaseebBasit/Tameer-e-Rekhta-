@@ -54,20 +54,25 @@ function ResetPasswordForm() {
         body: JSON.stringify({ token: token.trim(), newPassword }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : null;
+      } catch {}
+
       setSubmitting(false);
 
-      if (res.ok && data.success) {
+      if (res.ok && data?.success) {
         setSuccess(true);
         setTimeout(() => {
           router.push("/portal/login");
         }, 2500);
       } else {
-        setError(data.error || "Failed to reset password. The token may be expired.");
+        setError(data?.error || (res.status === 400 ? "Invalid or expired password reset link." : "Failed to reset password. Please try again."));
       }
     } catch {
       setSubmitting(false);
-      setError("Unable to connect to the authentication server. Please try again.");
+      setError("Unable to connect to the authentication server. Please check your network connection.");
     }
   };
 
@@ -76,13 +81,13 @@ function ResetPasswordForm() {
       <div className="max-w-md w-full space-y-8 bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-2xl shadow-xl border border-gray-100">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center gap-3 group">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-sm">
+            <div className="w-12 h-12 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-1 shadow-sm">
               <Image
                 src="/images/logo-mark.png"
                 alt="Ta'meer-e-Rekhta Logo"
-                fill
+                width={48}
+                height={48}
                 className="object-contain p-1"
-                priority
               />
             </div>
             <div className="text-left">

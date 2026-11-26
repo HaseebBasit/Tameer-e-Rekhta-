@@ -101,11 +101,12 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
         {/* Drawer Header */}
         <div className="p-5 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="relative w-9 h-9 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-0.5">
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-brand-mint/50 border border-brand-emerald/20 flex items-center justify-center p-0.5">
               <Image
                 src="/images/logo-mark.png"
                 alt="Ta'meer-e-Rekhta"
-                fill
+                width={32}
+                height={32}
                 className="object-contain p-0.5"
               />
             </div>

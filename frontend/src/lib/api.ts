@@ -38,7 +38,8 @@ export function getApiBaseUrl(): string {
   return "https://tmr-backend-6smd.onrender.com/api";
 }
 
-export const API_BASE = getApiBaseUrl();
+// In browser and relative portal code, ALWAYS use same-origin /api path
+export const API_BASE = typeof window !== "undefined" ? "/api" : getApiBaseUrl();
 
 /**
  * In-Memory Session Token Accessors (Zero LocalStorage / SessionStorage Persistence)

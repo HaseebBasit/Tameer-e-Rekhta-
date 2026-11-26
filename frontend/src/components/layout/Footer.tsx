@@ -54,11 +54,12 @@ export const Footer: React.FC = () => {
           {/* Column 1: Brand & Bio */}
           <div className="lg:col-span-5 space-y-5">
             <Link href="/" className="inline-flex items-center gap-3">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden bg-white/10 border border-white/15 flex items-center justify-center p-1">
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-white/10 border border-white/15 flex items-center justify-center p-1">
                 <Image
                   src="/images/logo-mark.png"
                   alt="Ta'meer-e-Rekhta Logo"
-                  fill
+                  width={44}
+                  height={44}
                   className="object-contain p-1"
                 />
               </div>
