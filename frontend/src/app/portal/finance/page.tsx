@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, fetchWithAuth } from "@/lib/api";
 import {
   DollarSign,
   TrendingUp,
@@ -258,10 +258,7 @@ function FinancePortalContent() {
   // 1. Fetch Overview Metrics
   const fetchOverview = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/finance/overview`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "include",
-      });
+      const res = await fetchWithAuth("/finance/overview");
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.overview) {
@@ -281,10 +278,7 @@ function FinancePortalContent() {
       if (incomeSearch) params.append("search", incomeSearch);
       params.append("limit", "100");
 
-      const res = await fetch(`${API_BASE}/finance/income?${params.toString()}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(`/finance/income?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.income)) {
@@ -305,10 +299,7 @@ function FinancePortalContent() {
       if (expenseSearch) params.append("search", expenseSearch);
       params.append("limit", "100");
 
-      const res = await fetch(`${API_BASE}/finance/expenses?${params.toString()}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(`/finance/expenses?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.expenses)) {
@@ -326,10 +317,7 @@ function FinancePortalContent() {
       const params = new URLSearchParams();
       if (budgetFilterDept) params.append("department", budgetFilterDept);
 
-      const res = await fetch(`${API_BASE}/finance/budgets?${params.toString()}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(`/finance/budgets?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.budgets)) {
@@ -345,10 +333,7 @@ function FinancePortalContent() {
   const [departmentsList, setDepartmentsList] = useState<{ name: string; code?: string }[]>([]);
   const fetchDepartments = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/departments`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "include",
-      });
+      const res = await fetchWithAuth("/departments");
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.departments)) {
@@ -398,13 +383,8 @@ function FinancePortalContent() {
     clearNotifications();
     setActionLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/finance/income`, {
+      const res = await fetchWithAuth("/finance/income", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify(incomeForm),
       });
       const data = await res.json();
@@ -441,13 +421,8 @@ function FinancePortalContent() {
     setActionLoading(true);
     try {
       const id = selectedDonation._id || selectedDonation.id;
-      const res = await fetch(`${API_BASE}/finance/income/${id}/verify`, {
+      const res = await fetchWithAuth(`/finance/income/${id}/verify`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify(verifyForm),
       });
       const data = await res.json();
@@ -472,13 +447,8 @@ function FinancePortalContent() {
     clearNotifications();
     setActionLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/finance/expenses`, {
+      const res = await fetchWithAuth("/finance/expenses", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify(expenseForm),
       });
       const data = await res.json();
@@ -525,13 +495,8 @@ function FinancePortalContent() {
     setActionLoading(true);
     try {
       const id = selectedExpense._id || selectedExpense.id;
-      const res = await fetch(`${API_BASE}/finance/expenses/${id}/review`, {
+      const res = await fetchWithAuth(`/finance/expenses/${id}/review`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify(reviewExpenseForm),
       });
       const data = await res.json();
@@ -564,13 +529,8 @@ function FinancePortalContent() {
     setActionLoading(true);
     try {
       const id = expense._id || expense.id;
-      const res = await fetch(`${API_BASE}/finance/expenses/${id}/disburse`, {
+      const res = await fetchWithAuth(`/finance/expenses/${id}/disburse`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify({ disbursedNotes: "Payment disbursed via finance office" }),
       });
       const data = await res.json();
@@ -593,13 +553,8 @@ function FinancePortalContent() {
     clearNotifications();
     setActionLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/finance/budgets`, {
+      const res = await fetchWithAuth("/finance/budgets", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify(budgetForm),
       });
       const data = await res.json();
@@ -633,13 +588,8 @@ function FinancePortalContent() {
     setActionLoading(true);
     try {
       const id = selectedBudget._id || selectedBudget.id;
-      const res = await fetch(`${API_BASE}/finance/budgets/${id}`, {
+      const res = await fetchWithAuth(`/finance/budgets/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        credentials: "include",
         body: JSON.stringify(editBudgetForm),
       });
       const data = await res.json();
@@ -662,10 +612,7 @@ function FinancePortalContent() {
   const handleExport = async (type: "income" | "expenses" | "summary", format: "csv" | "xlsx" = "csv") => {
     clearNotifications();
     try {
-      const res = await fetch(`${API_BASE}/finance/export/${type}?format=${format}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        credentials: "include",
-      });
+      const res = await fetchWithAuth(`/finance/export/${type}?format=${format}`);
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);

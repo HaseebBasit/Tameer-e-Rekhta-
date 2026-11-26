@@ -33,7 +33,8 @@ export type OperationalDesignation =
   | "member"
   | "volunteer";
 export type HRDesignation = "hr_head" | "hr_director" | "hr_coordination_incharge" | "hr_member";
-export type Designation = OperationalDesignation | HRDesignation;
+export type FinanceDesignation = "head_of_finance" | "finance_member";
+export type Designation = OperationalDesignation | HRDesignation | FinanceDesignation;
 
 export const OPERATIONAL_ROLES: TechnicalRole[] = [
   "dept_literature",
@@ -59,6 +60,9 @@ export const DESIGNATION_LABELS: Record<string, string> = {
   hr_director: "HR Director",
   hr_coordination_incharge: "HR Coordination In-charge",
   hr_member: "HR Team Member",
+  head_of_finance: "Head of Finance",
+  finance_head: "Head of Finance",
+  finance_member: "Finance Team Member",
 };
 
 /**
@@ -74,6 +78,9 @@ export function normalizeDesignation(designation?: string | null): string | null
   if (lower in DESIGNATION_LABELS) return lower;
   if (lower === "none" || lower === "null" || lower === "") return null;
   // Handle common aliases
+  if (lower.includes("finance") && lower.includes("head")) return "head_of_finance";
+  if (lower === "head_of_finance" || lower === "finance_head") return "head_of_finance";
+  if (lower.includes("finance") && lower.includes("member")) return "finance_member";
   if (lower.includes("punjab")) return "head_of_punjab";
   if (lower.includes("sindh")) return "head_of_sindh";
   if (lower.includes("graphic")) return "director_graphics";
@@ -97,7 +104,7 @@ export function getDesignationDisplayName(designation?: string | null, fallbackR
     return DESIGNATION_LABELS[normalized];
   }
   if (fallbackRole === "super_admin") return "Super Administrator";
-  if (fallbackRole === "finance") return "Finance Officer";
+  if (fallbackRole === "finance") return "Head of Finance";
   return designation || "Member";
 }
 
