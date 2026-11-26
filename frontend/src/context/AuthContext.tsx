@@ -50,6 +50,16 @@ export interface PortalUser {
   capabilities?: string[];
 }
 
+export interface LoginResult {
+  success: boolean;
+  error?: string;
+  user?: PortalUser;
+  requireMfa?: boolean;
+  mfaToken?: string;
+  requirePasswordChange?: boolean;
+  tempToken?: string;
+}
+
 interface AuthContextType {
   user: PortalUser | null;
   loading: boolean;
@@ -60,7 +70,9 @@ interface AuthContextType {
   activeDesignation: string | null;
   memberships: DepartmentMembership[];
   switchDepartment: (departmentNameOrCode: string) => Promise<{ success: boolean; error?: string }>;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: PortalUser }>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  verifyMfa: (mfaToken: string, code?: string, recoveryCode?: string) => Promise<LoginResult>;
+  changeInitialPassword: (tempToken: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   clearError: () => void;
   getDashboardRoute: (role?: string) => string;
@@ -87,7 +99,7 @@ export const getDashboardForRole = (role?: string): string => {
     case "finance":
       return "/portal/finance";
     case "developer":
-      return "/portal/super-admin";
+      return "/portal/developer";
     case "member":
       return "/portal/member";
     default:
@@ -216,7 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const login = useCallback(
-    async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: PortalUser }> => {
+    async (email: string, password: string): Promise<LoginResult> => {
       setError(null);
       setLoading(true);
 
@@ -280,18 +292,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Handle MFA requirement (TOTP verification pending)
       if (data.requireMfa) {
-        const mfaMsg = data.message || "Two-factor authentication code required. Please complete verification.";
-        setError(mfaMsg);
         setLoading(false);
-        return { success: false, error: mfaMsg };
+        return {
+          success: false,
+          requireMfa: true,
+          mfaToken: data.mfaToken,
+        };
       }
 
       // Handle forced password change on initial login
       if (data.requirePasswordChange) {
-        const pwdMsg = data.message || "Password change is required on initial login before access is granted.";
-        setError(pwdMsg);
         setLoading(false);
-        return { success: false, error: pwdMsg };
+        return {
+          success: false,
+          requirePasswordChange: true,
+          tempToken: data.tempToken,
+        };
       }
 
       const authenticatedUser = data.user as PortalUser;
@@ -311,6 +327,129 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       setLoading(false);
       return { success: true, user: authenticatedUser };
+    },
+    []
+  );
+
+  const verifyMfa = useCallback(
+    async (mfaToken: string, code?: string, recoveryCode?: string): Promise<LoginResult> => {
+      setError(null);
+      setLoading(true);
+
+      const baseUrl = getApiBaseUrl();
+      let res: Response;
+
+      try {
+        res = await fetch(`${baseUrl}/auth/mfa/verify`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          credentials: "include",
+          body: JSON.stringify({ mfaToken, code, recoveryCode }),
+        });
+      } catch {
+        const netErr = "Unable to connect to the authentication server. Please check your connection.";
+        setError(netErr);
+        setLoading(false);
+        return { success: false, error: netErr };
+      }
+
+      let data: any = null;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
+
+      if (!res.ok || !data?.success) {
+        const errMsg =
+          data?.error ||
+          (res.status === 401
+            ? "Invalid authentication code. Please check your authenticator app or backup code."
+            : `MFA verification failed (HTTP ${res.status}).`);
+        setError(errMsg);
+        setLoading(false);
+        return { success: false, error: errMsg };
+      }
+
+      // If initial password change is required
+      if (data.requirePasswordChange) {
+        setLoading(false);
+        return {
+          success: false,
+          requirePasswordChange: true,
+          tempToken: data.tempToken,
+        };
+      }
+
+      // Successful MFA login with session tokens
+      const authenticatedUser = data.user as PortalUser;
+      setUser(authenticatedUser);
+
+      if (data.token) {
+        setSessionToken(data.token);
+      }
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("rekhta_user", JSON.stringify(authenticatedUser));
+        if (authenticatedUser.activeDepartment) {
+          localStorage.setItem("rekhta_active_dept", authenticatedUser.activeDepartment);
+        }
+      }
+
+      setLoading(false);
+      return { success: true, user: authenticatedUser };
+    },
+    []
+  );
+
+  const changeInitialPassword = useCallback(
+    async (tempToken: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+      setError(null);
+      setLoading(true);
+
+      const baseUrl = getApiBaseUrl();
+      let res: Response;
+
+      try {
+        res = await fetch(`${baseUrl}/auth/change-initial-password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          credentials: "include",
+          body: JSON.stringify({ tempToken, newPassword }),
+        });
+      } catch {
+        const netErr = "Unable to connect to the authentication server. Please check your connection.";
+        setError(netErr);
+        setLoading(false);
+        return { success: false, error: netErr };
+      }
+
+      let data: any = null;
+      try {
+        const text = await res.text();
+        data = text ? JSON.parse(text) : null;
+      } catch {
+        data = null;
+      }
+
+      setLoading(false);
+
+      if (!res.ok || !data?.success) {
+        const errMsg =
+          data?.error ||
+          "Failed to update initial password. Ensure it meets complexity requirements (at least 10 characters).";
+        setError(errMsg);
+        return { success: false, error: errMsg };
+      }
+
+      return { success: true };
     },
     []
   );
@@ -372,6 +511,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         memberships,
         switchDepartment,
         login,
+        verifyMfa,
+        changeInitialPassword,
         logout,
         clearError,
         getDashboardRoute,

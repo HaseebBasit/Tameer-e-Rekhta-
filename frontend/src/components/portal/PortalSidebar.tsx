@@ -53,6 +53,7 @@ export function PortalSidebar({ mobileOpen, onCloseMobile }: PortalSidebarProps)
 
   const role = user.role;
   const isSuperAdmin = role === "super_admin";
+  const isDeveloper = role === "developer";
   const isDeptLead = role.startsWith("dept_");
   const isHR = role === "hr";
   const isFinance = role === "finance";
@@ -60,6 +61,15 @@ export function PortalSidebar({ mobileOpen, onCloseMobile }: PortalSidebarProps)
 
   // Build role-specific navigation items exactly matching REKHTA PORTAL 2
   const getNavItems = (): NavItem[] => {
+    if (isDeveloper) {
+      return [
+        { label: "Developer Console", href: "/portal/developer", icon: LayoutDashboard },
+        { label: "System Telemetry", href: "/portal/developer?tab=diagnostics", icon: ScrollText },
+        { label: "Audited Impersonation", href: "/portal/developer?tab=impersonate", icon: Users },
+        { label: "Public Website", href: "/", icon: ExternalLink, isExternal: true },
+      ];
+    }
+
     if (isSuperAdmin) {
       return [
         { label: "Executive Dashboard", href: "/portal/super-admin", icon: LayoutDashboard },
