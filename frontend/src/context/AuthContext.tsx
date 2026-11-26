@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, fetchWithAuth, setSessionToken, clearSessionToken } from "@/lib/api";
 
 export interface DepartmentMembership {
   department: string;
@@ -112,15 +112,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } catch {}
         }
 
-        // Validate session with backend using HTTP-only cookie in background
-        const res = await fetch(`${API_BASE}/auth/me`, {
-          method: "GET",
-          headers: { "X-Requested-With": "XMLHttpRequest" },
-          credentials: "include",
-        });
+        // Validate session with backend using bearer token and HTTP-only cookie
+        const res = await fetchWithAuth("/auth/me");
 
         if (res.ok) {
           const data = await res.json();
+          if (data?.token) {
+            setSessionToken(data.token);
+          }
           if (data?.user && isMounted) {
             setUser(data.user);
             if (typeof window !== "undefined") {
@@ -129,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else if (res.status === 401) {
           // Token expired or invalid
+          clearSessionToken();
           if (typeof window !== "undefined") {
             localStorage.removeItem("rekhta_user");
             localStorage.removeItem("rekhta_active_dept");
@@ -155,13 +155,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const switchDepartment = useCallback(
     async (departmentNameOrCode: string): Promise<{ success: boolean; error?: string }> => {
       try {
-        const res = await fetch(`${API_BASE}/auth/switch-department`, {
+        const res = await fetchWithAuth("/auth/switch-department", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-          credentials: "include",
           body: JSON.stringify({ department: departmentNameOrCode }),
         });
 
@@ -171,6 +166,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             success: false,
             error: data?.error || "Failed to switch department context. Authorization denied.",
           };
+        }
+
+        if (data.token) {
+          setSessionToken(data.token);
         }
 
         if (data.user) {
@@ -234,7 +233,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const authenticatedUser = data.user as PortalUser;
         setUser(authenticatedUser);
 
-        // Store only user display profile in localStorage (tokens remain in HTTP-only cookies)
+        if (data.token) {
+          setSessionToken(data.token);
+        }
+
+        // Store user display profile in localStorage (session token kept strictly in-memory)
         if (typeof window !== "undefined") {
           localStorage.setItem("rekhta_user", JSON.stringify(authenticatedUser));
           if (authenticatedUser.activeDepartment) {
@@ -256,14 +259,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE}/auth/logout`, {
+      await fetchWithAuth("/auth/logout", {
         method: "POST",
-        credentials: "include",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
       });
     } catch {
       // Ignore network errors during logout
     } finally {
+      clearSessionToken();
       if (typeof window !== "undefined") {
         localStorage.removeItem("rekhta_user");
         localStorage.removeItem("rekhta_active_dept");

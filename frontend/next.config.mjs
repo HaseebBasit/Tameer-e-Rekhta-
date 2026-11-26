@@ -33,6 +33,10 @@ const nextConfig = {
         destination: `${backendUrl}/api/department/:path*`,
       },
       {
+        source: '/api/departments',
+        destination: `${backendUrl}/api/departments`,
+      },
+      {
         source: '/api/departments/:path*',
         destination: `${backendUrl}/api/departments/:path*`,
       },
@@ -41,16 +45,32 @@ const nextConfig = {
         destination: `${backendUrl}/api/member/:path*`,
       },
       {
+        source: '/api/members',
+        destination: `${backendUrl}/api/members`,
+      },
+      {
         source: '/api/members/:path*',
         destination: `${backendUrl}/api/members/:path*`,
+      },
+      {
+        source: '/api/tasks',
+        destination: `${backendUrl}/api/tasks`,
       },
       {
         source: '/api/tasks/:path*',
         destination: `${backendUrl}/api/tasks/:path*`,
       },
       {
+        source: '/api/assessments',
+        destination: `${backendUrl}/api/assessments`,
+      },
+      {
         source: '/api/assessments/:path*',
         destination: `${backendUrl}/api/assessments/:path*`,
+      },
+      {
+        source: '/api/notifications',
+        destination: `${backendUrl}/api/notifications`,
       },
       {
         source: '/api/notifications/:path*',

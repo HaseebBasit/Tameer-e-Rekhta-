@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, fetchWithAuth } from "@/lib/api";
 import {
   CheckSquare,
   Users,
@@ -122,10 +122,8 @@ function DepartmentDashboardContent() {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE}/department/${encodeURIComponent(departmentName)}/overview`, {
-        credentials: "include",
+      const res = await fetchWithAuth(`/department/${encodeURIComponent(departmentName)}/overview`, {
         headers: {
-          "X-Requested-With": "XMLHttpRequest",
           "X-Department-Context": departmentName,
         },
       });
@@ -149,10 +147,7 @@ function DepartmentDashboardContent() {
 
   const fetchDeptLeaves = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/hr/leaves/department`, {
-        credentials: "include",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
+      const res = await fetchWithAuth("/hr/leaves/department");
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -173,12 +168,10 @@ function DepartmentDashboardContent() {
     if (!selectedDeptLeave) return;
     const leaveId = selectedDeptLeave._id || selectedDeptLeave.id;
     try {
-      const res = await fetch(`${API_BASE}/hr/leaves/${leaveId}/review`, {
+      const res = await fetchWithAuth(`/hr/leaves/${leaveId}/review`, {
         method: "PATCH",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({ action: deptLeaveAction, notes: deptLeaveNotes }),
       });
@@ -202,12 +195,11 @@ function DepartmentDashboardContent() {
     const assignedMember = members.find((m) => m.id === newTaskAssignedTo);
 
     try {
-      const res = await fetch(`${API_BASE}/tasks`, {
+      const res = await fetchWithAuth("/tasks", {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
+          "X-Department-Context": departmentName,
         },
         body: JSON.stringify({
           title: newTaskTitle,
@@ -245,12 +237,11 @@ function DepartmentDashboardContent() {
     const taskId = (selectedTaskForReview.id || selectedTaskForReview._id) as string;
 
     try {
-      const res = await fetch(`${API_BASE}/tasks/${taskId}/review`, {
+      const res = await fetchWithAuth(`/tasks/${taskId}/review`, {
         method: "PATCH",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
+          "X-Department-Context": departmentName,
         },
         body: JSON.stringify({
           action: reviewAction,
@@ -286,12 +277,11 @@ function DepartmentDashboardContent() {
     setSubmittingAssessment(true);
 
     try {
-      const res = await fetch(`${API_BASE}/assessments`, {
+      const res = await fetchWithAuth("/assessments", {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
+          "X-Department-Context": departmentName,
         },
         body: JSON.stringify({
           memberId: assessmentCandidateId,

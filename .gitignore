@@ -69,4 +69,8 @@ BACKEND*.md
 *ANALYSIS*.md
 *DESIGN*.md
 
+# Confidential Generated Activation PDFs
+*.pdf
+
+
 

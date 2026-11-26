@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, fetchWithAuth } from "@/lib/api";
 import {
   CheckSquare,
   Clock,
@@ -97,10 +97,7 @@ function MemberDashboardContent() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`${API_BASE}/tasks`, {
-        credentials: "include",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
+      const res = await fetchWithAuth("/tasks");
 
       if (res.ok) {
         const data = await res.json();

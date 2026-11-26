@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { API_BASE } from "@/lib/api";
+import { API_BASE, fetchWithAuth } from "@/lib/api";
 import {
   Users,
   Building2,
@@ -30,6 +30,7 @@ import {
   Check,
   X,
   FileCheck,
+  Download,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -220,6 +221,17 @@ function SuperAdminDashboardContent() {
   }> | null>(null);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [copiedBulkId, setCopiedBulkId] = useState<string | null>(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [downloadingDept, setDownloadingDept] = useState<string | null>(null);
+
+  const DEPARTMENT_PDFS = [
+    { code: "LIT", name: "Literature", filename: "LITERATURE_ACTIVATION_LINKS.pdf", color: "#0284c7", lead: "Noor ul Huda", membersCount: 15 },
+    { code: "CON", name: "Content Creation", filename: "CONTENT_CREATION_ACTIVATION_LINKS.pdf", color: "#7c3aed", lead: "Noor ul Huda", membersCount: 7 },
+    { code: "OAM", name: "Outreach & Marketing", filename: "OUTREACH_MARKETING_ACTIVATION_LINKS.pdf", color: "#d97706", lead: "Laiba Malik", membersCount: 5 },
+    { code: "MED", name: "Media", filename: "MEDIA_ACTIVATION_LINKS.pdf", color: "#db2777", lead: "Aisha Tariq", membersCount: 5 },
+    { code: "HR", name: "HR", filename: "HR_ACTIVATION_LINKS.pdf", color: "#059669", lead: "Hania", membersCount: 7 },
+    { code: "WEL", name: "Welfare", filename: "WELFARE_ACTIVATION_LINKS.pdf", color: "#e11d48", lead: "Asfand Yar Karimi / Daniyal Asim", membersCount: 10 },
+  ];
 
   // New task form state
   const [newTaskTitle, setNewTaskTitle] = useState("");
@@ -557,15 +569,61 @@ function SuperAdminDashboardContent() {
     }
   };
 
-  const handleCreateTask = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleDownloadDepartmentPdf = async (deptCode: string, filename: string) => {
+    setDownloadingDept(deptCode);
     try {
-      const res = await fetch(`${API_BASE}/tasks`, {
+      const res = await fetch(`${API_BASE}/super-admin/export-activation-pdf`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({
+          departmentCode: deptCode,
+          links: bulkActivations || [],
+        }),
+      });
+
+      if (!res.ok) {
+        let errJson = null;
+        try {
+          errJson = await res.json();
+        } catch {}
+        throw new Error(errJson?.error || `Failed to download ${filename}.`);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setActionSuccess(`${filename} downloaded successfully!`);
+      setTimeout(() => setActionSuccess(null), 4000);
+    } catch (err: any) {
+      alert(err.message || "Network error while downloading PDF.");
+    } finally {
+      setDownloadingDept(null);
+    }
+  };
+
+  const handleDownloadActivationPdf = async () => {
+    return handleDownloadDepartmentPdf("LIT", "LITERATURE_ACTIVATION_LINKS.pdf");
+  };
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetchWithAuth("/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Department-Context": newTaskDept,
         },
         body: JSON.stringify({
           title: newTaskTitle,
@@ -1186,7 +1244,68 @@ function SuperAdminDashboardContent() {
                 </div>
               </div>
 
-              {/* Action Toolbar */}
+              {/* Six Official Department Activation PDFs (Phase 10F) */}
+              <div className="p-4 bg-white rounded-xl border border-gray-200 shadow-xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2.5">
+                  <div>
+                    <h3 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                      <FileCheck className="w-4 h-4 text-[#800F35]" />
+                      Official Department Activation PDFs (Phase 10F)
+                    </h3>
+                    <p className="text-2xs text-gray-500 mt-0.5">
+                      Download individual activation directories for each official department containing complete single-use activation tokens and clickable activation URLs.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleBulkGenerateActivations}
+                      disabled={bulkGenerating}
+                      className="px-3.5 py-2 bg-[#800F35] hover:bg-[#6A0C2B] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${bulkGenerating ? "animate-spin" : ""}`} />
+                      {bulkGenerating ? "Generating Links..." : "Bulk Generate Activation Links"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                  {DEPARTMENT_PDFS.map((dept) => (
+                    <div
+                      key={dept.code}
+                      className="p-3 rounded-lg border border-gray-200/90 bg-gray-50/60 hover:bg-white hover:border-gray-300 transition flex flex-col justify-between gap-2"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: dept.color }} />
+                            <span className="text-xs font-bold text-gray-950 truncate">{dept.name}</span>
+                          </div>
+                          <span className="text-2xs font-semibold px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">
+                            {dept.code}
+                          </span>
+                        </div>
+                        <p className="text-2xs text-gray-500 font-mono mt-1 truncate">{dept.filename}</p>
+                        <p className="text-2xs text-gray-600 mt-0.5">{dept.membersCount} Members • Lead: {dept.lead}</p>
+                      </div>
+                      <div className="pt-1.5 border-t border-gray-100 flex items-center justify-between">
+                        <span className="text-2xs text-emerald-700 font-medium">Verified Active Tokens</span>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadDepartmentPdf(dept.code, dept.filename)}
+                          disabled={downloadingDept === dept.code}
+                          className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-2xs font-semibold rounded-md shadow-xs transition flex items-center gap-1 shrink-0 disabled:opacity-50"
+                        >
+                          <Download className={`w-3 h-3 ${downloadingDept === dept.code ? "animate-bounce" : ""}`} />
+                          {downloadingDept === dept.code ? "Downloading..." : "Download PDF"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Toolbar & Distribution Policy */}
               <div className="p-3.5 bg-gradient-to-r from-amber-50 to-orange-50/40 rounded-xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h3 className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
@@ -1194,18 +1313,9 @@ function SuperAdminDashboardContent() {
                     Manual Link Distribution Policy
                   </h3>
                   <p className="text-2xs text-amber-800 mt-0.5">
-                    Automatic email and SMS delivery is strictly disabled. The Super Admin manually copies and distributes each link.
+                    Automatic email and SMS delivery is strictly disabled. The Super Admin manually copies and distributes each link or downloads the department PDF directories above.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleBulkGenerateActivations}
-                  disabled={bulkGenerating}
-                  className="px-3.5 py-2 bg-[#800F35] hover:bg-[#6A0C2B] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 shrink-0 disabled:opacity-50"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${bulkGenerating ? "animate-spin" : ""}`} />
-                  {bulkGenerating ? "Generating Links..." : "Bulk Generate Activation Links"}
-                </button>
               </div>
 
               {/* Activation Table */}
@@ -2272,14 +2382,31 @@ function SuperAdminDashboardContent() {
               </table>
             </div>
 
-            <div className="pt-4 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setBulkActivations(null)}
-                className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl transition"
-              >
-                Done
-              </button>
+            <div className="pt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-2xs font-semibold text-gray-500 mr-1">Download Dept PDF:</span>
+                {DEPARTMENT_PDFS.map((dept) => (
+                  <button
+                    key={dept.code}
+                    type="button"
+                    onClick={() => handleDownloadDepartmentPdf(dept.code, dept.filename)}
+                    disabled={downloadingDept === dept.code}
+                    className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xs font-bold rounded-lg transition flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <Download className="w-2.5 h-2.5" />
+                    {dept.code}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setBulkActivations(null)}
+                  className="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold text-xs rounded-xl transition"
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         </div>
