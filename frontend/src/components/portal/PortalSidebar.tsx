@@ -28,6 +28,7 @@ import {
   Receipt,
   CreditCard,
   PiggyBank,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -68,6 +69,7 @@ export function PortalSidebar({ mobileOpen, onCloseMobile }: PortalSidebarProps)
         { label: "Leave Management", href: "/portal/super-admin?tab=leaves", icon: Calendar },
         { label: "HR Management", href: "/portal/hr", icon: Briefcase },
         { label: "Finance & Accounts", href: "/portal/finance", icon: DollarSign },
+        { label: "Media Bank", href: "/portal/media", icon: ImageIcon },
         { label: "Confidential Grading", href: "/portal/super-admin?tab=assessments", icon: Award, confidential: true },
         { label: "System Audit Logs", href: "/portal/super-admin?tab=audit", icon: ScrollText },
         { label: "Public Website", href: "/", icon: ExternalLink, isExternal: true },
@@ -83,6 +85,7 @@ export function PortalSidebar({ mobileOpen, onCloseMobile }: PortalSidebarProps)
         { label: "Staff Directory", href: "/portal/hr?tab=employees", icon: Users },
         { label: "Leave Management", href: "/portal/hr?tab=leaves", icon: Calendar },
         { label: "Export HR Data", href: "/portal/hr?tab=export", icon: Download },
+        { label: "Media Bank", href: "/portal/media", icon: ImageIcon },
         { label: "Announcements", href: "/portal/hr?tab=announcements", icon: Megaphone },
         { label: "Public Website", href: "/", icon: ExternalLink, isExternal: true },
       ];
@@ -100,23 +103,28 @@ export function PortalSidebar({ mobileOpen, onCloseMobile }: PortalSidebarProps)
     }
 
     if (isDeptLead) {
+      const isMedia = role === "dept_media" || user.department === "Media";
+      const baseOverviewHref = isMedia ? "/portal/media" : "/portal/department";
       return [
-        { label: "Department Overview", href: "/portal/department", icon: LayoutDashboard },
-        { label: "Task Management", href: "/portal/department?tab=tasks", icon: CheckSquare },
-        { label: "Team Members", href: "/portal/department?tab=members", icon: Users },
-        { label: "Review Submissions", href: "/portal/department?tab=submissions", icon: ClipboardList },
-        { label: "Department Leaves", href: "/portal/department?tab=leaves", icon: Calendar },
-        { label: "Blind Assessment", href: "/portal/department?tab=assessment", icon: Award, confidential: true },
-        { label: "Announcements", href: "/portal/department?tab=announcements", icon: Megaphone },
+        { label: isMedia ? "Media Overview" : "Department Overview", href: baseOverviewHref, icon: LayoutDashboard },
+        { label: isMedia ? "Media Tasks" : "Task Management", href: `${baseOverviewHref}?tab=tasks`, icon: CheckSquare },
+        { label: "Team Members", href: `${baseOverviewHref}?tab=members`, icon: Users },
+        { label: "Review Submissions", href: `${baseOverviewHref}?tab=submissions`, icon: ClipboardList },
+        { label: "Department Leaves", href: `${baseOverviewHref}?tab=leaves`, icon: Calendar },
+        { label: "Blind Assessment", href: `${baseOverviewHref}?tab=assessment`, icon: Award, confidential: true },
+        { label: "Media Bank", href: "/portal/media?tab=gallery", icon: ImageIcon },
+        { label: "Announcements", href: `${baseOverviewHref}?tab=announcements`, icon: Megaphone },
         { label: "Public Website", href: "/", icon: ExternalLink, isExternal: true },
       ];
     }
 
     // Default Member Navigation
+    const isMediaMember = user.department === "Media";
     return [
       { label: "My Workspace", href: "/portal/member", icon: LayoutDashboard },
       { label: "Assigned Tasks", href: "/portal/member?tab=tasks", icon: CheckSquare },
       { label: "Leave Requests", href: "/portal/member?tab=leaves", icon: Calendar },
+      { label: "Media Bank", href: "/portal/media", icon: ImageIcon },
       { label: "Announcements", href: "/portal/member?tab=announcements", icon: Megaphone },
       { label: "Public Website", href: "/", icon: ExternalLink, isExternal: true },
     ];

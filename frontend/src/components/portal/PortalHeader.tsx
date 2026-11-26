@@ -24,6 +24,7 @@ import {
   FileText,
   Briefcase,
   Check,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface HeaderProps {
@@ -54,6 +55,8 @@ const SEARCH_SHORTCUTS: SearchShortcut[] = [
   { title: "Expense Claims", category: "Finance", href: "/portal/finance?tab=expenses", icon: CheckSquare, roles: ["finance", "super_admin"] },
   { title: "Department Budgets", category: "Finance", href: "/portal/finance?tab=budgets", icon: DollarSign, roles: ["finance", "super_admin"] },
   { title: "Department Workspace", category: "Department", href: "/portal/department", icon: LayoutDashboard },
+  { title: "Media Department Portal", category: "Department", href: "/portal/media", icon: ImageIcon },
+  { title: "Media Bank / Creative Assets", category: "Department", href: "/portal/media?tab=gallery", icon: ImageIcon },
   { title: "Department Tasks", category: "Department", href: "/portal/department?tab=tasks", icon: CheckSquare },
   { title: "Team Members", category: "Department", href: "/portal/department?tab=members", icon: Users },
   { title: "Review Submissions", category: "Department", href: "/portal/department?tab=submissions", icon: FileText },

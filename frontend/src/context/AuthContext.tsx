@@ -73,7 +73,9 @@ export const getDashboardForRole = (role?: string): string => {
     case "super_admin":
       return "/portal/super-admin";
     case "dept_literature":
+      return "/portal/department";
     case "dept_media":
+      return "/portal/media";
     case "dept_marketing":
     case "dept_outreach":
     case "dept_oam":

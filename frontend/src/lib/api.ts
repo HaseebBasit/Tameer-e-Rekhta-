@@ -152,8 +152,14 @@ export async function fetchWithAuth(
   });
 
   // If 401 received and request was not already a refresh or login call, attempt silent refresh
+  // Only execute silent refresh if a session was previously established (in-memory token or cached profile)
+  const hasPriorSession = Boolean(
+    getSessionToken() || (typeof window !== "undefined" && localStorage.getItem("rekhta_user"))
+  );
+
   if (
     response.status === 401 &&
+    hasPriorSession &&
     !url.includes("/auth/refresh") &&
     !url.includes("/auth/login") &&
     typeof window !== "undefined"

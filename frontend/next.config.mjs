@@ -9,6 +9,35 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/portal/literature',
+        destination: '/portal/department?dept=Literature',
+        permanent: false,
+      },
+      {
+        source: '/portal/content-creation',
+        destination: '/portal/department?dept=Content%20Creation',
+        permanent: false,
+      },
+      {
+        source: '/portal/welfare',
+        destination: '/portal/department?dept=Welfare',
+        permanent: false,
+      },
+      {
+        source: '/portal/outreach-and-marketing',
+        destination: '/portal/department?dept=Outreach%20and%20Marketing',
+        permanent: false,
+      },
+      {
+        source: '/portal/oam',
+        destination: '/portal/department?dept=Outreach%20and%20Marketing',
+        permanent: false,
+      },
+    ];
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_API_URL || 'https://tmr-backend-6smd.onrender.com';
     return [
